@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_15_000002) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -157,6 +157,48 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["sla_policy_id"], name: "index_applied_slas_on_sla_policy_id"
   end
 
+  create_table "appointment_services", force: :cascade do |t|
+    t.bigint "appointment_id", null: false
+    t.bigint "barber_service_id"
+    t.boolean "use_subscription", default: false
+    t.decimal "subscription_charge_pct", precision: 5, scale: 2, default: "0.0"
+    t.bigint "product_id"
+    t.index ["appointment_id", "barber_service_id"], name: "idx_appointment_services_unique", unique: true
+    t.index ["appointment_id"], name: "index_appointment_services_on_appointment_id"
+    t.index ["barber_service_id"], name: "index_appointment_services_on_barber_service_id"
+    t.index ["product_id"], name: "index_appointment_services_on_product_id"
+  end
+
+  create_table "appointments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id"
+    t.bigint "conversation_id"
+    t.datetime "scheduled_at", null: false
+    t.string "service_type", default: "general", null: false
+    t.integer "status", default: 0, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "professional_id"
+    t.bigint "branch_id"
+    t.bigint "contact_subscription_id"
+    t.decimal "total_price", precision: 10, scale: 2
+    t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
+    t.datetime "end_time", precision: nil
+    t.string "title"
+    t.string "appointment_type", default: "service"
+    t.string "location_type", default: "in_person"
+    t.index ["account_id", "contact_id"], name: "index_appointments_on_account_id_and_contact_id"
+    t.index ["account_id", "conversation_id"], name: "index_appointments_on_account_id_and_conversation_id"
+    t.index ["account_id", "scheduled_at"], name: "index_appointments_on_account_id_and_scheduled_at"
+    t.index ["account_id"], name: "index_appointments_on_account_id"
+    t.index ["branch_id"], name: "index_appointments_on_branch_id"
+    t.index ["contact_id"], name: "index_appointments_on_contact_id"
+    t.index ["contact_subscription_id"], name: "index_appointments_on_contact_subscription_id"
+    t.index ["conversation_id"], name: "index_appointments_on_conversation_id"
+    t.index ["professional_id"], name: "index_appointments_on_professional_id"
+  end
+
   create_table "article_embeddings", force: :cascade do |t|
     t.bigint "article_id", null: false
     t.text "term", null: false
@@ -258,6 +300,68 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.datetime "updated_at", null: false
     t.boolean "active", default: true, null: false
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
+  end
+
+  create_table "barber_campaigns", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "campaign_type", default: "whatsapp"
+    t.string "target", default: "all"
+    t.text "message"
+    t.string "status", default: "draft"
+    t.datetime "scheduled_at"
+    t.datetime "sent_at"
+    t.integer "sent_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_barber_campaigns_on_account_id_and_status"
+    t.index ["account_id"], name: "index_barber_campaigns_on_account_id"
+  end
+
+  create_table "barber_services", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "duration_minutes", default: 30, null: false
+    t.decimal "price", precision: 10, scale: 2
+    t.string "photo"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active", "name"], name: "index_barber_services_on_account_id_and_active_and_name"
+    t.index ["account_id"], name: "index_barber_services_on_account_id"
+  end
+
+  create_table "branch_professionals", force: :cascade do |t|
+    t.bigint "branch_id", null: false
+    t.bigint "professional_id", null: false
+    t.index ["branch_id", "professional_id"], name: "index_branch_professionals_on_branch_id_and_professional_id", unique: true
+    t.index ["branch_id"], name: "index_branch_professionals_on_branch_id"
+    t.index ["professional_id"], name: "index_branch_professionals_on_professional_id"
+  end
+
+  create_table "branch_schedules", force: :cascade do |t|
+    t.bigint "branch_id", null: false
+    t.integer "day_of_week", null: false
+    t.boolean "active", default: true, null: false
+    t.string "start_time", default: "09:00", null: false
+    t.string "end_time", default: "18:00", null: false
+    t.index ["branch_id", "day_of_week"], name: "index_branch_schedules_on_branch_id_and_day_of_week", unique: true
+    t.index ["branch_id"], name: "index_branch_schedules_on_branch_id"
+  end
+
+  create_table "branches", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "address"
+    t.string "phone"
+    t.text "description"
+    t.string "photo"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active", "name"], name: "index_branches_on_account_id_and_active_and_name"
+    t.index ["account_id"], name: "index_branches_on_account_id"
   end
 
   create_table "campaigns", force: :cascade do |t|
@@ -382,6 +486,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["assistant_id", "enabled"], name: "index_captain_scenarios_on_assistant_id_and_enabled"
     t.index ["assistant_id"], name: "index_captain_scenarios_on_assistant_id"
     t.index ["enabled"], name: "index_captain_scenarios_on_enabled"
+  end
+
+  create_table "cash_transactions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "branch_id"
+    t.bigint "professional_id"
+    t.bigint "appointment_id"
+    t.string "transaction_type", null: false
+    t.string "category"
+    t.string "description", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.datetime "date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "date"], name: "index_cash_transactions_on_account_id_and_date"
+    t.index ["account_id", "transaction_type", "date"], name: "idx_on_account_id_transaction_type_date_31f2eedf59"
+    t.index ["account_id"], name: "index_cash_transactions_on_account_id"
+    t.index ["branch_id"], name: "index_cash_transactions_on_branch_id"
+    t.index ["professional_id"], name: "index_cash_transactions_on_professional_id"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -582,6 +705,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["phone_number"], name: "index_channel_whatsapp_on_phone_number", unique: true
   end
 
+  create_table "commissions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "professional_id", null: false
+    t.bigint "appointment_id"
+    t.decimal "percentage", precision: 5, scale: 2, default: "40.0"
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.boolean "paid", default: false, null: false
+    t.datetime "paid_at"
+    t.string "period"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "period", "paid"], name: "index_commissions_on_account_id_and_period_and_paid"
+    t.index ["account_id", "professional_id", "paid"], name: "index_commissions_on_account_id_and_professional_id_and_paid"
+    t.index ["account_id"], name: "index_commissions_on_account_id"
+    t.index ["professional_id"], name: "index_commissions_on_professional_id"
+  end
+
   create_table "companies", force: :cascade do |t|
     t.string "name", null: false
     t.string "domain"
@@ -610,6 +750,30 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["source_id"], name: "index_contact_inboxes_on_source_id"
   end
 
+  create_table "contact_subscriptions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "subscription_plan_id"
+    t.string "plan_name", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.string "status", default: "active", null: false
+    t.string "quota_type", default: "unlimited"
+    t.integer "quota_limit", default: 0
+    t.string "quota_days", default: "[]"
+    t.string "service_ids", default: "[]"
+    t.string "day_price_rules", default: "[]"
+    t.datetime "start_date", null: false
+    t.datetime "renewal_date"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_contact_subscriptions_on_account_id_and_status"
+    t.index ["account_id"], name: "index_contact_subscriptions_on_account_id"
+    t.index ["contact_id", "status"], name: "index_contact_subscriptions_on_contact_id_and_status"
+    t.index ["contact_id"], name: "index_contact_subscriptions_on_contact_id"
+    t.index ["subscription_plan_id"], name: "index_contact_subscriptions_on_subscription_plan_id"
+  end
+
   create_table "contacts", id: :serial, force: :cascade do |t|
     t.string "name", default: ""
     t.string "email"
@@ -628,6 +792,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.string "country_code", default: ""
     t.boolean "blocked", default: false, null: false
     t.bigint "company_id"
+    t.boolean "bot_enabled", default: true, null: false
     t.index "lower((email)::text), account_id", name: "index_contacts_on_lower_email_account_id"
     t.index ["account_id", "contact_type"], name: "index_contacts_on_account_id_and_contact_type"
     t.index ["account_id", "email", "phone_number", "identifier"], name: "index_contacts_on_nonempty_fields", where: "(((email)::text <> ''::text) OR ((phone_number)::text <> ''::text) OR ((identifier)::text <> ''::text))"
@@ -721,6 +886,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["account_id"], name: "index_copilot_threads_on_account_id"
     t.index ["assistant_id"], name: "index_copilot_threads_on_assistant_id"
     t.index ["user_id"], name: "index_copilot_threads_on_user_id"
+  end
+
+  create_table "costs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "branch_id"
+    t.string "name", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.string "cost_type", default: "fixed", null: false
+    t.string "category"
+    t.datetime "due_date"
+    t.boolean "paid", default: false, null: false
+    t.datetime "paid_at"
+    t.boolean "recurring", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "due_date"], name: "index_costs_on_account_id_and_due_date"
+    t.index ["account_id", "paid"], name: "index_costs_on_account_id_and_paid"
+    t.index ["account_id"], name: "index_costs_on_account_id"
+    t.index ["branch_id"], name: "index_costs_on_branch_id"
   end
 
   create_table "csat_survey_responses", force: :cascade do |t|
@@ -825,6 +1009,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "holidays", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "branch_id", null: false
+    t.string "date", null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_holidays_on_account_id"
+    t.index ["branch_id", "date"], name: "index_holidays_on_branch_id_and_date", unique: true
+    t.index ["branch_id"], name: "index_holidays_on_branch_id"
+  end
+
   create_table "inbox_assignment_policies", force: :cascade do |t|
     t.bigint "inbox_id", null: false
     t.bigint "assignment_policy_id", null: false
@@ -843,6 +1039,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["agent_capacity_policy_id", "inbox_id"], name: "idx_on_agent_capacity_policy_id_inbox_id_71c7ec4caf", unique: true
     t.index ["agent_capacity_policy_id"], name: "index_inbox_capacity_limits_on_agent_capacity_policy_id"
     t.index ["inbox_id"], name: "index_inbox_capacity_limits_on_inbox_id"
+  end
+
+  create_table "inbox_knowledge_items", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id"
+    t.string "category", default: ""
+    t.text "question", null: false
+    t.text "answer", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["account_id", "inbox_id"], name: "index_inbox_knowledge_items_on_account_id_and_inbox_id"
   end
 
   create_table "inbox_members", id: :serial, force: :cascade do |t|
@@ -903,6 +1111,130 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "settings", default: {}
+  end
+
+  create_table "kanban_funnel_inboxes", force: :cascade do |t|
+    t.bigint "kanban_funnel_id", null: false
+    t.bigint "inbox_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kanban_funnel_id", "inbox_id"], name: "index_kanban_funnel_inboxes_on_kanban_funnel_id_and_inbox_id", unique: true
+    t.index ["kanban_funnel_id"], name: "index_kanban_funnel_inboxes_on_kanban_funnel_id"
+  end
+
+  create_table "kanban_funnels", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "show_unassigned", default: true, null: false
+    t.index ["account_id", "position"], name: "index_kanban_funnels_on_account_id_and_position"
+    t.index ["account_id"], name: "index_kanban_funnels_on_account_id"
+  end
+
+  create_table "kanban_loss_reasons", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.boolean "active", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "name"], name: "index_kanban_loss_reasons_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_kanban_loss_reasons_on_account_id"
+  end
+
+  create_table "kanban_stage_automations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "stage_id", null: false
+    t.string "action_type", null: false
+    t.jsonb "action_params", default: {}
+    t.integer "delay_minutes", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_kanban_stage_automations_on_account_id"
+    t.index ["stage_id"], name: "index_kanban_stage_automations_on_stage_id"
+  end
+
+  create_table "kanban_stage_items", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "funnel_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "stage_id", null: false
+    t.datetime "entered_at"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "deal_value", precision: 15, scale: 2
+    t.string "loss_reason"
+    t.text "outcome_note"
+    t.datetime "outcome_at"
+    t.index ["account_id"], name: "index_kanban_stage_items_on_account_id"
+    t.index ["conversation_id"], name: "index_kanban_stage_items_on_conversation_id"
+    t.index ["funnel_id", "conversation_id"], name: "index_kanban_stage_items_on_funnel_id_and_conversation_id", unique: true
+    t.index ["stage_id"], name: "index_kanban_stage_items_on_stage_id"
+  end
+
+  create_table "kanban_stages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "label_id"
+    t.string "color", default: "bg-slate-500"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "funnel_id", null: false
+    t.integer "stage_type", default: 0, null: false
+    t.index ["account_id", "label_id"], name: "index_kanban_stages_on_account_id_and_label_id", unique: true, where: "(label_id IS NOT NULL)"
+    t.index ["account_id", "position"], name: "index_kanban_stages_on_account_id_and_position"
+    t.index ["account_id"], name: "index_kanban_stages_on_account_id"
+    t.index ["funnel_id", "position"], name: "index_kanban_stages_on_funnel_id_and_position"
+  end
+
+  create_table "knowledge_base_faqs", force: :cascade do |t|
+    t.bigint "knowledge_base_id", null: false
+    t.text "question", null: false
+    t.text "answer", null: false
+    t.string "category", default: ""
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
+  end
+
+  create_table "knowledge_base_files", force: :cascade do |t|
+    t.bigint "knowledge_base_id", null: false
+    t.string "original_filename", null: false
+    t.bigint "file_size", default: 0
+    t.string "content_type", default: ""
+    t.string "status", default: "pending"
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
+  end
+
+  create_table "knowledge_base_inboxes", force: :cascade do |t|
+    t.bigint "knowledge_base_id", null: false
+    t.bigint "inbox_id", null: false
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
+    t.index ["knowledge_base_id", "inbox_id"], name: "idx_kb_inboxes_unique", unique: true
+  end
+
+  create_table "knowledge_base_sites", force: :cascade do |t|
+    t.bigint "knowledge_base_id", null: false
+    t.text "url", null: false
+    t.string "title", default: ""
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
+  end
+
+  create_table "knowledge_bases", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.text "description", default: ""
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
   end
 
   create_table "labels", force: :cascade do |t|
@@ -1093,6 +1425,76 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["user_id"], name: "index_portals_members_on_user_id"
   end
 
+  create_table "products", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.string "category"
+    t.decimal "price", precision: 10, scale: 2, default: "0.0"
+    t.decimal "cost", precision: 10, scale: 2, default: "0.0"
+    t.integer "stock", default: 0
+    t.string "photo"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "tipo"
+    t.integer "duracao"
+    t.string "sku"
+    t.string "external_id"
+    t.index ["account_id", "active", "name"], name: "index_products_on_account_id_and_active_and_name"
+    t.index ["account_id", "external_id"], name: "index_products_on_account_id_and_external_id"
+    t.index ["account_id"], name: "idx_products_account_id"
+    t.index ["account_id"], name: "index_products_on_account_id"
+  end
+
+  create_table "professional_blocked_dates", force: :cascade do |t|
+    t.bigint "professional_id", null: false
+    t.string "date", null: false
+    t.string "start_time"
+    t.string "end_time"
+    t.string "reason"
+    t.index ["professional_id", "date"], name: "index_professional_blocked_dates_on_professional_id_and_date"
+    t.index ["professional_id"], name: "index_professional_blocked_dates_on_professional_id"
+  end
+
+  create_table "professional_breaks", force: :cascade do |t|
+    t.bigint "professional_id", null: false
+    t.integer "day_of_week", null: false
+    t.string "start_time", null: false
+    t.string "end_time", null: false
+    t.string "label", default: "Intervalo"
+    t.index ["professional_id"], name: "index_professional_breaks_on_professional_id"
+  end
+
+  create_table "professional_schedules", force: :cascade do |t|
+    t.bigint "professional_id", null: false
+    t.integer "day_of_week", null: false
+    t.boolean "active", default: true, null: false
+    t.string "start_time", default: "09:00", null: false
+    t.string "end_time", default: "18:00", null: false
+    t.index ["professional_id", "day_of_week"], name: "idx_on_professional_id_day_of_week_bfd88c80a9", unique: true
+    t.index ["professional_id"], name: "index_professional_schedules_on_professional_id"
+  end
+
+  create_table "professionals", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "email"
+    t.string "phone"
+    t.string "specialty"
+    t.string "photo"
+    t.decimal "commission_pct", precision: 5, scale: 2, default: "40.0"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "agent_id"
+    t.string "color"
+    t.index ["account_id", "active", "name"], name: "index_professionals_on_account_id_and_active_and_name"
+    t.index ["account_id", "agent_id"], name: "index_professionals_on_account_id_and_agent_id", unique: true
+    t.index ["account_id"], name: "index_professionals_on_account_id"
+    t.index ["agent_id"], name: "index_professionals_on_agent_id"
+  end
+
   create_table "related_categories", force: :cascade do |t|
     t.bigint "category_id"
     t.bigint "related_category_id"
@@ -1124,6 +1526,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.index ["user_id"], name: "index_reporting_events_on_user_id"
   end
 
+  create_table "scheduled_messages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id"
+    t.bigint "conversation_id", null: false
+    t.text "content"
+    t.integer "status"
+    t.datetime "scheduled_at"
+    t.integer "message_type"
+    t.jsonb "template_params"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.datetime "sent_at"
+    t.bigint "automation_rule_id"
+    t.index ["account_id"], name: "index_scheduled_messages_on_account_id"
+    t.index ["conversation_id", "status"], name: "index_scheduled_messages_on_conversation_id_and_status"
+    t.index ["conversation_id"], name: "index_scheduled_messages_on_conversation_id"
+    t.index ["inbox_id"], name: "index_scheduled_messages_on_inbox_id"
+    t.index ["scheduled_at", "status"], name: "index_scheduled_messages_on_scheduled_at_and_status"
+    t.index ["user_id"], name: "index_scheduled_messages_on_user_id"
+  end
+
   create_table "sla_events", force: :cascade do |t|
     t.bigint "applied_sla_id", null: false
     t.bigint "conversation_id", null: false
@@ -1152,6 +1576,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
     t.string "description"
     t.float "resolution_time_threshold"
     t.index ["account_id"], name: "index_sla_policies_on_account_id"
+  end
+
+  create_table "subscription_plans", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.string "period", default: "monthly", null: false
+    t.string "quota_type", default: "unlimited", null: false
+    t.integer "quota_limit", default: 0
+    t.string "quota_days", default: "[]"
+    t.string "service_ids", default: "[]"
+    t.string "day_price_rules", default: "[]"
+    t.string "photo"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active"], name: "index_subscription_plans_on_account_id_and_active"
+    t.index ["account_id"], name: "index_subscription_plans_on_account_id"
   end
 
   create_table "taggings", id: :serial, force: :cascade do |t|
@@ -1271,7 +1714,54 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_30_061021) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "appointment_services", "appointments"
+  add_foreign_key "appointment_services", "barber_services"
+  add_foreign_key "appointment_services", "products"
+  add_foreign_key "appointments", "accounts"
+  add_foreign_key "appointments", "branches"
+  add_foreign_key "appointments", "contact_subscriptions"
+  add_foreign_key "appointments", "contacts"
+  add_foreign_key "appointments", "conversations"
+  add_foreign_key "appointments", "professionals"
+  add_foreign_key "barber_campaigns", "accounts"
+  add_foreign_key "barber_services", "accounts"
+  add_foreign_key "branch_professionals", "branches"
+  add_foreign_key "branch_professionals", "professionals"
+  add_foreign_key "branch_schedules", "branches"
+  add_foreign_key "branches", "accounts"
+  add_foreign_key "cash_transactions", "accounts"
+  add_foreign_key "cash_transactions", "branches"
+  add_foreign_key "cash_transactions", "professionals"
+  add_foreign_key "commissions", "accounts"
+  add_foreign_key "commissions", "professionals"
+  add_foreign_key "contact_subscriptions", "accounts"
+  add_foreign_key "contact_subscriptions", "contacts"
+  add_foreign_key "contact_subscriptions", "subscription_plans"
+  add_foreign_key "costs", "accounts"
+  add_foreign_key "costs", "branches"
+  add_foreign_key "holidays", "accounts"
+  add_foreign_key "holidays", "branches"
+  add_foreign_key "inbox_knowledge_items", "accounts", name: "inbox_knowledge_items_account_id_fkey"
+  add_foreign_key "inbox_knowledge_items", "inboxes", name: "inbox_knowledge_items_inbox_id_fkey"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "kanban_funnel_inboxes", "kanban_funnels"
+  add_foreign_key "kanban_funnels", "accounts"
+  add_foreign_key "kanban_loss_reasons", "accounts"
+  add_foreign_key "kanban_stage_automations", "accounts"
+  add_foreign_key "kanban_stage_automations", "kanban_stages", column: "stage_id"
+  add_foreign_key "kanban_stages", "kanban_funnels", column: "funnel_id"
+  add_foreign_key "knowledge_base_faqs", "knowledge_bases", column: "knowledge_base_id", name: "knowledge_base_faqs_knowledge_base_id_fkey", on_delete: :cascade
+  add_foreign_key "knowledge_base_files", "knowledge_bases", column: "knowledge_base_id", name: "knowledge_base_files_knowledge_base_id_fkey", on_delete: :cascade
+  add_foreign_key "knowledge_base_inboxes", "inboxes", name: "knowledge_base_inboxes_inbox_id_fkey", on_delete: :cascade
+  add_foreign_key "knowledge_base_inboxes", "knowledge_bases", column: "knowledge_base_id", name: "knowledge_base_inboxes_knowledge_base_id_fkey", on_delete: :cascade
+  add_foreign_key "knowledge_base_sites", "knowledge_bases", column: "knowledge_base_id", name: "knowledge_base_sites_knowledge_base_id_fkey", on_delete: :cascade
+  add_foreign_key "knowledge_bases", "accounts", name: "knowledge_bases_account_id_fkey", on_delete: :cascade
+  add_foreign_key "products", "accounts"
+  add_foreign_key "professional_blocked_dates", "professionals"
+  add_foreign_key "professional_breaks", "professionals"
+  add_foreign_key "professional_schedules", "professionals"
+  add_foreign_key "professionals", "accounts"
+  add_foreign_key "subscription_plans", "accounts"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

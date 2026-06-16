@@ -206,13 +206,19 @@ const actions = {
     }
   },
 
-  assignAgent: async ({ dispatch }, { conversationId, agentId }) => {
+  assignAgent: async ({ dispatch, rootGetters }, { conversationId, agentId }) => {
     try {
       const response = await ConversationApi.assignAgent({
         conversationId,
         agentId,
       });
       dispatch('setCurrentChatAssignee', response.data);
+      const conv = rootGetters['conversations/getConversationById'](conversationId);
+      const contactId = conv?.meta?.sender?.id;
+      const agentName = response.data?.name;
+      if (contactId && agentName) {
+        dispatch('contactNotes/create', { contactId, content: `👤 Agente atribuído: ${agentName}` }, { root: true });
+      }
     } catch (error) {
       // Handle error
     }

@@ -15,3 +15,12 @@ vendor/bundle
 .DS_Store
 *.swp
 *~
+.key
+.pem
+.git
+.gitignore
+.pnpm-store
+.vscode
+.windsurf
+.idea
+coverage

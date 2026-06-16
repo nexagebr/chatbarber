@@ -61,4 +61,23 @@ class AutomationRules::ActionService < ActionService
       TeamNotifications::AutomationNotificationMailer.conversation_creation(@conversation, team, params[0][:message])&.deliver_now
     end
   end
+
+  def send_scheduled_message(params)
+    content = params[0].to_s.strip
+    delay_minutes = params[1].to_i
+    delay_minutes = 60 if delay_minutes <= 0
+
+    return if content.blank?
+
+    ScheduledMessage.create!(
+      account: @account,
+      conversation: @conversation,
+      inbox_id: @conversation.inbox_id,
+      status: :pending,
+      content: content,
+      scheduled_at: delay_minutes.minutes.from_now,
+      automation_rule_id: @rule.id,
+      template_params: { is_private: false }
+    )
+  end
 end

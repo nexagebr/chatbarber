@@ -4,6 +4,7 @@ import { useAlert } from 'dashboard/composables';
 import { dynamicTime } from 'shared/helpers/timeHelper';
 import { useAdmin } from 'dashboard/composables/useAdmin';
 import ContactInfoRow from './ContactInfoRow.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
 import Avatar from 'next/avatar/Avatar.vue';
 import SocialIcons from './SocialIcons.vue';
 import EditContact from './EditContact.vue';
@@ -24,6 +25,7 @@ export default {
   components: {
     NextButton,
     ContactInfoRow,
+    Switch,
     EditContact,
     Avatar,
     ComposeConversation,
@@ -53,6 +55,7 @@ export default {
       showEditModal: false,
       showMergeModal: false,
       showDeleteModal: false,
+      localBotEnabled: true,
     };
   },
   computed: {
@@ -100,6 +103,12 @@ export default {
       },
       immediate: true,
     },
+    'contact.bot_enabled': {
+      handler(val) {
+        this.localBotEnabled = !!val;
+      },
+      immediate: true,
+    },
   },
   methods: {
     dynamicTime,
@@ -116,6 +125,21 @@ export default {
       // Flag to enable drag n drop,
       // When compose modal is closed
       emitter.emit(BUS_EVENTS.NEW_CONVERSATION_MODAL, false);
+    },
+    async toggleBotEnabled() {
+      const newValue = !this.localBotEnabled;
+      this.localBotEnabled = newValue;
+      try {
+        await this.$store.dispatch('contacts/update', {
+          id: this.contact.id,
+          bot_enabled: newValue,
+        });
+        await this.$nextTick();
+        this.localBotEnabled = newValue;
+      } catch (error) {
+        this.localBotEnabled = !newValue;
+        useAlert(this.$t('EDIT_CONTACT.API.ERROR_MESSAGE'));
+      }
     },
     toggleDeleteModal() {
       this.showDeleteModal = !this.showDeleteModal;
@@ -246,6 +270,7 @@ export default {
             icon="contact-identify"
             emoji="🪪"
             :title="$t('CONTACT_PANEL.IDENTIFIER')"
+            show-copy
           />
           <ContactInfoRow
             :value="additionalAttributes.company_name"
@@ -261,6 +286,19 @@ export default {
             :title="$t('CONTACT_PANEL.LOCATION')"
           />
           <SocialIcons :social-profiles="socialProfiles" />
+          <!-- Bot toggle — mesmo estilo das linhas de info -->
+          <div class="w-full h-5 ltr:-ml-1 rtl:-mr-1">
+            <div class="flex items-center justify-between gap-2 text-n-slate-11 ltr:ml-1 rtl:mr-1">
+              <div class="flex items-center gap-2">
+                <span class="i-lucide-bot text-sm flex-shrink-0" />
+                <span class="text-sm">Habilitar Bot</span>
+              </div>
+              <Switch
+                :model-value="localBotEnabled"
+                @change="toggleBotEnabled"
+              />
+            </div>
+          </div>
         </div>
       </div>
       <div class="flex items-center w-full mt-0.5 gap-2">

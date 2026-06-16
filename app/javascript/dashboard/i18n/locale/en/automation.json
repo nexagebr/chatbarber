@@ -150,7 +150,17 @@
       "ADD_PRIVATE_NOTE": "Add a Private Note",
       "CHANGE_PRIORITY": "Change Priority",
       "ADD_SLA": "Add SLA",
-      "OPEN_CONVERSATION": "Open conversation"
+      "OPEN_CONVERSATION": "Open conversation",
+      "SEND_SCHEDULED_MESSAGE": "Send Scheduled Message",
+      "SCHEDULED_MESSAGE_DELAY_LABEL": "Send after trigger",
+      "SCHEDULED_MESSAGE_CUSTOM": "Custom:",
+      "SCHEDULED_PRESETS": {
+        "MIN_15": "15 min",
+        "MIN_30": "30 min",
+        "HOUR_1": "1 hour",
+        "HOUR_4": "4 hours",
+        "DAY_1": "1 day"
+      }
     },
     "MESSAGE_TYPES": {
       "INCOMING": "Incoming Message",

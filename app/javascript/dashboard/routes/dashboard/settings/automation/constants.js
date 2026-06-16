@@ -128,6 +128,10 @@ export const AUTOMATIONS = {
         key: 'send_attachment',
         name: 'SEND_ATTACHMENT',
       },
+      {
+        key: 'send_scheduled_message',
+        name: 'SEND_SCHEDULED_MESSAGE',
+      },
     ],
   },
   conversation_created: {
@@ -243,6 +247,10 @@ export const AUTOMATIONS = {
       {
         key: 'send_attachment',
         name: 'SEND_ATTACHMENT',
+      },
+      {
+        key: 'send_scheduled_message',
+        name: 'SEND_SCHEDULED_MESSAGE',
       },
     ],
   },
@@ -372,6 +380,10 @@ export const AUTOMATIONS = {
         key: 'send_attachment',
         name: 'SEND_ATTACHMENT',
       },
+      {
+        key: 'send_scheduled_message',
+        name: 'SEND_SCHEDULED_MESSAGE',
+      },
     ],
   },
   conversation_opened: {
@@ -490,6 +502,10 @@ export const AUTOMATIONS = {
         key: 'send_attachment',
         name: 'SEND_ATTACHMENT',
       },
+      {
+        key: 'send_scheduled_message',
+        name: 'SEND_SCHEDULED_MESSAGE',
+      },
     ],
   },
   conversation_resolved: {
@@ -589,6 +605,10 @@ export const AUTOMATIONS = {
       {
         key: 'send_attachment',
         name: 'SEND_ATTACHMENT',
+      },
+      {
+        key: 'send_scheduled_message',
+        name: 'SEND_SCHEDULED_MESSAGE',
       },
     ],
   },
@@ -697,5 +717,10 @@ export const AUTOMATION_ACTION_TYPES = [
     key: 'add_sla',
     label: 'ADD_SLA',
     inputType: 'search_select',
+  },
+  {
+    key: 'send_scheduled_message',
+    label: 'SEND_SCHEDULED_MESSAGE',
+    inputType: 'scheduled_message',
   },
 ];

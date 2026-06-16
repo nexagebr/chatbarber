@@ -103,6 +103,36 @@ Rails.application.routes.draw do
             end
           end
           resources :canned_responses, only: [:index, :create, :update, :destroy]
+          resources :inbox_knowledge_items, only: [:index, :create, :update, :destroy]
+          resources :products, only: [:index, :show, :create, :update, :destroy]
+          resources :appointments, only: [:index, :show, :create, :update, :destroy]
+          resources :services, only: [:index, :create, :update, :destroy]
+          get 'availability', to: 'availability#index'
+          resources :professionals, only: [:index, :show, :create, :update, :destroy] do
+            collection do
+              post :activate_agent
+            end
+            member do
+              put  :schedules
+              get  :blocked_dates
+              post :blocked_dates
+              get  :breaks
+              post :breaks
+            end
+            resources :blocked_dates, only: [:destroy], controller: 'professionals', action: :delete_blocked_date
+          end
+          resources :branches, only: [:index, :show, :create, :update, :destroy] do
+            member do
+              put :schedules
+            end
+            resources :holidays, only: [:index, :create, :destroy], controller: 'holidays'
+          end
+          resources :knowledge_bases, only: [:index, :show, :create, :update, :destroy] do
+            resources :knowledge_base_faqs, only: [:index, :create, :update, :destroy]
+            resources :knowledge_base_sites, only: [:index, :create, :destroy]
+            resources :knowledge_base_files, only: [:index, :create, :destroy]
+            resource :knowledge_base_inboxes, only: [:show, :update]
+          end
           resources :automation_rules, only: [:index, :create, :show, :update, :destroy] do
             post :clone
           end
@@ -140,6 +170,9 @@ Rails.application.routes.draw do
               resource :participants, only: [:show, :create, :update, :destroy]
               resource :direct_uploads, only: [:create]
               resource :draft_messages, only: [:show, :update, :destroy]
+              resources :scheduled_messages, only: [:index, :create, :destroy] do
+                collection { post :upload_attachment }
+              end
             end
             member do
               post :mute
@@ -151,6 +184,7 @@ Rails.application.routes.draw do
               post :update_last_seen
               post :unread
               post :custom_attributes
+              post :lead_source
               get :attachments
               get :inbox_assistant
               get :reporting_events if ChatwootApp.enterprise?
@@ -234,6 +268,23 @@ Rails.application.routes.draw do
             end
           end
           resources :labels, only: [:index, :show, :create, :update, :destroy]
+
+          resources :kanban_loss_reasons, only: [:index, :create, :update, :destroy]
+          resources :kanban_placements, only: [:index]
+
+          resources :kanban_funnels, only: [:index, :create, :update, :destroy] do
+            resources :kanban_stages, only: [:index, :create, :update, :destroy] do
+              collection do
+                post :reorder
+              end
+              resources :kanban_stage_automations, only: [:index, :create, :update, :destroy]
+            end
+            resources :kanban_stage_items, only: [:index, :destroy] do
+              collection do
+                put :upsert
+              end
+            end
+          end
 
           resources :notifications, only: [:index, :update, :destroy] do
             collection do

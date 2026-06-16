@@ -446,6 +446,12 @@
         "SUCCESS_MESSAGE": "Contact updated successfully",
         "ERROR_MESSAGE": "Unable to update contact. Please try again later."
       },
+      "IDENTIFIER": {
+        "TITLE": "Unique identifier (UUID)",
+        "PLACEHOLDER": "e.g. 550e8400-e29b-41d4-a716-446655440000",
+        "DESCRIPTION": "Use to integrate with external systems. The ID is unique per account.",
+        "GENERATE_TOOLTIP": "Generate a new random UUID"
+      },
       "SOCIAL_MEDIA": {
         "TITLE": "Edit social links",
         "FORM": {
@@ -502,9 +508,11 @@
     "SIDEBAR": {
       "TABS": {
         "ATTRIBUTES": "Attributes",
+        "ACTIVITY": "Activity",
         "HISTORY": "History",
         "NOTES": "Notes",
-        "MERGE": "Merge"
+        "MERGE": "Merge",
+        "CRM": "Funnel / CRM"
       },
       "HISTORY": {
         "EMPTY_STATE": "There are no previous conversations associated to this contact"
@@ -653,6 +661,75 @@
         "DISCARD": "Discard",
         "SEND": "Send ({keyCode})"
       }
+    }
+  },
+  "CONTACTS_KANBAN": {
+    "TITLE": "Contacts Kanban",
+    "SUBTITLE": "Manage your contacts by stages",
+    "REFRESH": "Refresh",
+    "SETTINGS_BTN": "Configure Stages",
+    "UNNAMED": "Unnamed Conversation",
+    "STAGES": {
+      "NEW": "New",
+      "CONTACTED": "Contacted",
+      "QUALIFIED": "Qualified",
+      "ENGAGED": "Engaged",
+      "INACTIVE": "Inactive"
+    },
+    "SETTINGS": {
+      "TITLE": "Kanban Settings",
+      "DESCRIPTION": "Manage kanban stages and link tags for automatic conversation movement",
+      "STAGES_LIST": "Stages",
+      "ADD_STAGE": "Add Stage",
+      "EDIT_STAGE": "Edit Stage",
+      "NEW_STAGE": "New Stage",
+      "EDIT_STAGE_DESC": "Modify stage information",
+      "NEW_STAGE_DESC": "Create a new stage in the funnel",
+      "STAGE_NAME": "Stage Name",
+      "STAGE_NAME_PLACEHOLDER": "Ex: Negotiating",
+      "STAGE_COLOR": "Color",
+      "LINKED_TAG": "Linked Tag",
+      "SELECT_TAG": "Select a tag",
+      "OPTIONAL": "(Optional)",
+      "NO_TAG": "No tag linked",
+      "NO_TAGS": "No tags available",
+      "TAG_DESCRIPTION": "When this tag is applied to a conversation, it will be automatically moved to this stage",
+      "STAGE_CREATED": "Stage created successfully",
+      "STAGE_UPDATED": "Stage updated successfully",
+      "STAGE_DELETED": "Stage deleted successfully",
+      "STAGE_ERROR": "Error saving stage",
+      "DELETE_CONFIRM": "Are you sure you want to delete this stage?",
+      "DELETE_ERROR": "Error deleting stage",
+      "ORDER_SAVED": "Stages order updated",
+      "ORDER_ERROR": "Error reordering stages",
+      "LOAD_ERROR": "Error loading stages",
+      "NAME_REQUIRED": "Stage name is required",
+      "LOADING": "Loading...",
+      "NO_STAGES": "No stages created yet",
+      "ADD_FIRST_STAGE": "Create first stage",
+      "EDIT_NOTICE": "Conversations in this stage will not be affected",
+      "SAVE": "Save",
+      "CANCEL": "Cancel",
+      "CLOSE": "Close"
+    },
+    "COLORS": {
+      "BLUE": "Blue",
+      "GREEN": "Green",
+      "YELLOW": "Yellow",
+      "RED": "Red",
+      "PURPLE": "Purple",
+      "PINK": "Pink",
+      "INDIGO": "Indigo",
+      "GRAY": "Gray"
+    }
+  },
+  "KANBAN": {
+    "FUNNEL": {
+      "TITLE": "Contact Funnel",
+      "SUBTITLE": "Manage your contacts through the sales funnel",
+      "REFRESH": "Refresh",
+      "SETTINGS_BTN": "Configure Stages",
+      "UNNAMED": "Unnamed Contact"
     }
   }
 }

@@ -110,6 +110,20 @@ class Whatsapp::IncomingMessageBaseService
     return if @conversation
 
     @conversation = ::Conversation.create!(conversation_params)
+    attach_whatsapp_lead_source
+  end
+
+  def attach_whatsapp_lead_source
+    referral = @processed_params[:messages]&.first&.dig(:referral)
+    return if referral.blank?
+
+    lead_source = ::Crm::LeadSourceParser.from_whatsapp_referral(referral)
+    return if lead_source.blank?
+
+    ::Crm::AttributeLeadSource.new(
+      conversation: @conversation,
+      lead_source: lead_source
+    ).perform
   end
 
   def attach_files

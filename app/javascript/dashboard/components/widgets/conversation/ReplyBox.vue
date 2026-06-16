@@ -17,6 +17,7 @@ import ArticleSearchPopover from 'dashboard/routes/dashboard/helpcenter/componen
 import CopilotEditorSection from './CopilotEditorSection.vue';
 import MessageSignatureMissingAlert from './MessageSignatureMissingAlert.vue';
 import ReplyBoxBanner from './ReplyBoxBanner.vue';
+import ScheduleMessageModal from './ScheduleMessageModal.vue';
 import QuotedEmailPreview from './QuotedEmailPreview.vue';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
@@ -65,6 +66,7 @@ export default {
     AttachmentPreview,
     AudioRecorder,
     ReplyBoxBanner,
+    ScheduleMessageModal,
     EmojiInput,
     MessageSignatureMissingAlert,
     ReplyBottomPanel,
@@ -136,6 +138,7 @@ export default {
       newConversationModalActive: false,
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
+      showScheduleModal: false,
     };
   },
   computed: {
@@ -1307,8 +1310,16 @@ export default {
         @replace-text="replaceText"
         @toggle-insert-article="toggleInsertArticle"
         @toggle-quoted-reply="toggleQuotedReply"
+        @open-schedule="showScheduleModal = true"
       />
     </Transition>
+
+    <ScheduleMessageModal
+      :show="showScheduleModal"
+      :conversation-id="conversationId"
+      :default-message="message"
+      @close="showScheduleModal = false"
+    />
 
     <WhatsappTemplates
       :inbox-id="inbox.id"

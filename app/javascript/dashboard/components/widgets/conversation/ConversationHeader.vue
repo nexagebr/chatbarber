@@ -90,6 +90,18 @@ const hasMultipleInboxes = computed(
 );
 
 const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
+
+const kanbanPlacements = computed(() => store.getters['kanbanPlacements/getPlacements']);
+const allFunnels       = computed(() => store.getters['kanbanPlacements/getFunnels']);
+
+// Current funnel: from placement (1-funnel model) or inbox-linked funnel for "leads novos"
+const currentFunnelName = computed(() => {
+  if (kanbanPlacements.value.length > 0) return kanbanPlacements.value[0].funnel_name ?? null;
+  const inboxId = props.chat?.inbox_id;
+  if (!inboxId) return null;
+  const linked = allFunnels.value.find(f => Array.isArray(f.inbox_ids) && f.inbox_ids.includes(inboxId));
+  return linked?.name ?? null;
+});
 </script>
 
 <template>
@@ -129,6 +141,15 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
             class="text-n-amber-10 my-0 mx-0 min-w-[14px] flex-shrink-0"
             icon="warning"
           />
+          <!-- funnel badge -->
+          <span
+            v-if="currentFunnelName"
+            class="inline-flex items-center gap-0.5 flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap cursor-default"
+            style="background: color-mix(in srgb, rgb(var(--n-brand)) 12%, transparent); color: rgb(var(--n-brand));"
+          >
+            <i class="i-lucide-git-branch-plus" style="font-size:9px" />
+            {{ currentFunnelName }}
+          </span>
         </div>
 
         <div
@@ -155,3 +176,4 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
     </div>
   </div>
 </template>
+

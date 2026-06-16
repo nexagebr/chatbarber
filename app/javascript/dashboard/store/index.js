@@ -36,6 +36,18 @@ import inboxAssignableAgents from './modules/inboxAssignableAgents';
 import inboxes from './modules/inboxes';
 import inboxMembers from './modules/inboxMembers';
 import integrations from './modules/integrations';
+import kanbanFunnels from './modules/kanbanFunnels';
+import kanbanStages from './modules/kanbanStages';
+import kanbanStageItems from './modules/kanbanStageItems';
+import kanbanStageAutomations from './modules/kanbanStageAutomations';
+import kanbanLossReasons from './modules/kanbanLossReasons';
+import inboxKnowledgeItems from './modules/inboxKnowledgeItems';
+import appointments from './modules/appointments';
+import professionals from './modules/professionals';
+import knowledgeBases from './modules/knowledgeBases';
+import products from './modules/products';
+import kanbanPlacements from './modules/kanbanPlacements';
+import scheduledMessages from './modules/scheduledMessages';
 import labels from './modules/labels';
 import macros from './modules/macros';
 import notifications from './modules/notifications';
@@ -99,6 +111,18 @@ export default createStore({
     inboxes,
     inboxMembers,
     integrations,
+    kanbanFunnels,
+    kanbanStages,
+    kanbanStageItems,
+    kanbanStageAutomations,
+    kanbanLossReasons,
+    kanbanPlacements,
+    inboxKnowledgeItems,
+    appointments,
+    professionals,
+    knowledgeBases,
+    products,
+    scheduledMessages,
     labels,
     macros,
     notifications,

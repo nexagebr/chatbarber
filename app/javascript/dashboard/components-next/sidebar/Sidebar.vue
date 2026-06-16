@@ -303,6 +303,13 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Kanban',
+      label: t('SIDEBAR.KANBAN'),
+      icon: 'i-lucide-kanban',
+      to: accountScopedRoute('kanban_funnel'),
+      activeOn: ['kanban_dashboard', 'kanban_funnel'],
+    },
+    {
       name: 'Captain',
       icon: 'i-woot-captain',
       label: t('SIDEBAR.CAPTAIN'),
@@ -454,6 +461,12 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Agenda',
+      label: 'Agenda',
+      icon: 'i-lucide-calendar-days',
+      to: accountScopedRoute('agenda_index'),
+    },
+    {
       name: 'Reports',
       label: t('SIDEBAR.REPORTS'),
       icon: 'i-lucide-chart-spline',
@@ -566,6 +579,12 @@ const menuItems = computed(() => {
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
         },
+        {
+          name: 'Settings Appearance',
+          label: t('SIDEBAR.APPEARANCE'),
+          icon: 'i-lucide-palette',
+          to: accountScopedRoute('appearance_settings_index'),
+        },
         // {
         //   name: 'Settings Captain',
         //   label: t('SIDEBAR.CAPTAIN_AI'),
@@ -631,6 +650,30 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.CANNED_RESPONSES'),
           icon: 'i-lucide-message-square-quote',
           to: accountScopedRoute('canned_list'),
+        },
+        {
+          name: 'Settings Knowledge Base',
+          label: 'Base de Conhecimento',
+          icon: 'i-lucide-book-open',
+          to: accountScopedRoute('knowledge_base_list'),
+        },
+        {
+          name: 'Settings Products',
+          label: 'Produtos',
+          icon: 'i-lucide-package',
+          to: accountScopedRoute('products_list'),
+        },
+        {
+          name: 'Settings Professionals',
+          label: 'Profissionais',
+          icon: 'i-lucide-user-check',
+          to: accountScopedRoute('professionals_list'),
+        },
+        {
+          name: 'Settings Branches',
+          label: 'Filiais',
+          icon: 'i-lucide-store',
+          to: accountScopedRoute('branches_list'),
         },
         {
           name: 'Settings Integrations',

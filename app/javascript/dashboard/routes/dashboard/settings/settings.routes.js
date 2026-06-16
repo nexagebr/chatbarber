@@ -26,6 +26,10 @@ import profile from './profile/profile.routes';
 import security from './security/security.routes';
 import conversationWorkflow from './conversationWorkflow/conversationWorkflow.routes';
 import captain from './captain/captain.routes';
+import knowledgeBase from './knowledgeBase/knowledgeBase.routes';
+import products from './products/products.routes';
+import professionals from './professionals/professionals.routes';
+import branches from './branches/branches.routes';
 
 export default {
   routes: [
@@ -67,5 +71,9 @@ export default {
     ...security.routes,
     ...conversationWorkflow.routes,
     ...captain.routes,
+    ...knowledgeBase.routes,
+    ...products.routes,
+    ...professionals.routes,
+    ...branches.routes,
   ],
 };

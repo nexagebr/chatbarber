@@ -5,8 +5,10 @@ import { routes as contactRoutes } from './contacts/routes';
 import { routes as companyRoutes } from './companies/routes';
 import { routes as notificationRoutes } from './notifications/routes';
 import { routes as inboxRoutes } from './inbox/routes';
+import { routes as kanbanRoutes } from './kanban/routes';
 import { frontendURL } from '../../helper/URLHelper';
 import helpcenterRoutes from './helpcenter/helpcenter.routes';
+import appointmentsRoutes from './appointments/appointments.routes';
 import campaignsRoutes from './campaigns/campaigns.routes';
 import { routes as captainRoutes } from './captain/captain.routes';
 import AppContainer from './Dashboard.vue';
@@ -22,12 +24,14 @@ export default {
         ...captainRoutes,
         ...inboxRoutes,
         ...conversation.routes,
+        ...kanbanRoutes,
         ...settings.routes,
         ...contactRoutes,
         ...companyRoutes,
         ...searchRoutes,
         ...notificationRoutes,
         ...helpcenterRoutes.routes,
+        ...appointmentsRoutes.routes,
         ...campaignsRoutes.routes,
       ],
     },

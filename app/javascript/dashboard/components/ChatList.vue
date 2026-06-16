@@ -891,6 +891,8 @@ watch(activeFolder, (newVal, oldVal) => {
 
 watch(chatLists, () => {
   chatsOnView.value = conversationList.value;
+  const ids = conversationList.value.map(c => c.id).filter(Boolean);
+  if (ids.length) store.dispatch('kanbanPlacements/fetchBulkForConversations', ids);
 });
 
 watch(conversationFilters, (newVal, oldVal) => {

@@ -366,7 +366,10 @@ export default {
           @click.stop="$emit('assignTeam', team)"
         />
       </MenuItemWithSubmenu>
-      <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
+      <hr 
+        v-if="isAllowed([MENU.OPEN_NEW_TAB, MENU.COPY_LINK]) || (isAdmin && isAllowed([MENU.DELETE]))"
+        class="m-1 rounded border-b border-n-weak dark:border-n-weak" 
+      />
     </template>
     <template v-if="isAllowed([MENU.OPEN_NEW_TAB, MENU.COPY_LINK])">
       <MenuItem

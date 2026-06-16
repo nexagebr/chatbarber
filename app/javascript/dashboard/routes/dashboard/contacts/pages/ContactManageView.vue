@@ -13,6 +13,8 @@ import ContactNotes from 'dashboard/components-next/Contacts/ContactsSidebar/Con
 import ContactHistory from 'dashboard/components-next/Contacts/ContactsSidebar/ContactHistory.vue';
 import ContactMerge from 'dashboard/components-next/Contacts/ContactsSidebar/ContactMerge.vue';
 import ContactCustomAttributes from 'dashboard/components-next/Contacts/ContactsSidebar/ContactCustomAttributes.vue';
+import ContactKanbanPanel from 'dashboard/components-next/Contacts/ContactsSidebar/ContactKanbanPanel.vue';
+import ContactActivity from 'dashboard/components-next/Contacts/ContactsSidebar/ContactActivity.vue';
 
 const store = useStore();
 const route = useRoute();
@@ -38,6 +40,7 @@ const { t } = useI18n();
 
 const CONTACT_TABS_OPTIONS = [
   { key: 'ATTRIBUTES', value: 'attributes' },
+  { key: 'ACTIVITY', value: 'activity' },
   { key: 'HISTORY', value: 'history' },
   { key: 'NOTES', value: 'notes' },
   { key: 'MERGE', value: 'merge' },
@@ -169,6 +172,7 @@ onMounted(() => {
             v-if="activeTab === 'attributes'"
             :selected-contact="selectedContact"
           />
+          <ContactActivity v-if="activeTab === 'activity'" />
           <ContactNotes v-if="activeTab === 'notes'" />
           <ContactHistory v-if="activeTab === 'history'" />
           <ContactMerge

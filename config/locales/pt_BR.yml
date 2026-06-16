@@ -306,8 +306,8 @@ pt_BR:
       description: 'Crie issues em Linear diretamente da sua janela de conversa. Alternativamente, vincule as issues lineares existentes para um processo de rastreamento de problemas mais simples e eficiente.'
     notion:
       name: 'Notion'
-      short_description: 'Integre banco de dados, documentos e páginas diretamente com o Capitão.'
-      description: 'Conecte o seu espaço de trabalho Notion para permitir que o Capitão acesse e gere respostas inteligentes usando o conteúdo de seus bancos de dados, documentos e páginas para fornecer suporte ao cliente mais contextual.'
+      short_description: 'Integre banco de dados, documentos e páginas diretamente com o Barber.'
+      description: 'Conecte o seu espaço de trabalho Notion para permitir que o Barber acesse e gere respostas inteligentes usando o conteúdo de seus bancos de dados, documentos e páginas para fornecer suporte ao cliente mais contextual.'
     shopify:
       name: 'Shopify'
       short_description: 'Acessar detalhes do pedido e dados de clientes da sua loja Shopify.'

@@ -59,6 +59,13 @@ const inboxesList = useMapGetter('inboxes/getInboxes');
 const activeInbox = useMapGetter('getSelectedInbox');
 const accountId = useMapGetter('getCurrentAccountId');
 
+const kanbanFunnelName = computed(() =>
+  store.getters['kanbanPlacements/getFunnelNameForConversation'](props.chat.id)
+);
+const kanbanInfo = computed(() =>
+  store.getters['kanbanPlacements/getKanbanInfoForConversation'](props.chat.id)
+);
+
 const chatMetadata = computed(() => props.chat.meta || {});
 
 const assignee = computed(() => chatMetadata.value.assignee || {});
@@ -305,12 +312,22 @@ const deleteConversation = () => {
           <PriorityMark :priority="chat.priority" class="flex-shrink-0" />
         </div>
       </div>
-      <h4
-        class="conversation--user text-sm my-0 mx-2 capitalize pt-0.5 text-ellipsis overflow-hidden whitespace-nowrap flex-1 min-w-0 ltr:pr-16 rtl:pl-16 text-n-slate-12"
-        :class="hasUnread ? 'font-semibold' : 'font-medium'"
-      >
-        {{ currentContact.name }}
-      </h4>
+      <div class="flex items-center gap-1.5 mx-2 pt-0.5 min-w-0 ltr:pr-16 rtl:pl-16">
+        <h4
+          class="conversation--user text-sm my-0 capitalize text-ellipsis overflow-hidden whitespace-nowrap min-w-0 text-n-slate-12"
+          :class="hasUnread ? 'font-semibold' : 'font-medium'"
+        >
+          {{ currentContact.name }}
+        </h4>
+        <span
+          v-if="kanbanFunnelName"
+          class="inline-flex items-center gap-0.5 flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+          style="background: color-mix(in srgb, rgb(var(--n-brand)) 12%, transparent); color: rgb(var(--n-brand));"
+        >
+          <i class="i-lucide-git-branch-plus" style="font-size:9px" />
+          {{ kanbanFunnelName }}
+        </span>
+      </div>
       <VoiceCallStatus
         v-if="voiceCallData.status"
         key="voice-status-row"
@@ -340,6 +357,34 @@ const deleteConversation = () => {
           {{ $t(`CHAT_LIST.NO_MESSAGES`) }}
         </span>
       </p>
+      <!-- Kanban stage progress bar -->
+      <div
+        v-if="kanbanInfo && kanbanInfo.totalStages > 0"
+        class="flex items-center gap-2 mx-2 mt-1"
+      >
+        <div class="flex items-center gap-0.5 flex-1 min-w-0">
+          <div
+            v-for="i in kanbanInfo.totalStages"
+            :key="i"
+            class="h-1 flex-1 rounded-full transition-all"
+            :style="{
+              background: i <= kanbanInfo.stageIndex
+                ? (kanbanInfo.stageType === 'won'  ? '#f59e0b' :
+                   kanbanInfo.stageType === 'lost' ? '#dc2626' : 'rgb(var(--n-brand))')
+                : 'color-mix(in srgb, rgb(var(--n-brand)) 18%, transparent)'
+            }"
+          />
+        </div>
+        <span
+          class="text-[10px] font-bold flex-shrink-0 tabular-nums leading-none"
+          :style="{
+            color: kanbanInfo.stageType === 'won'  ? '#f59e0b' :
+                   kanbanInfo.stageType === 'lost' ? '#dc2626' : 'rgb(var(--n-brand))'
+          }"
+        >
+          {{ kanbanInfo.stageType === 'won' ? '✓' : kanbanInfo.stageType === 'lost' ? '✕' : `${kanbanInfo.stageIndex} / ${kanbanInfo.totalStages}` }}
+        </span>
+      </div>
       <div
         class="absolute flex flex-col ltr:right-3 rtl:left-3"
         :class="showMetaSection ? 'top-8' : 'top-4'"

@@ -5,6 +5,7 @@ import { differenceInDays } from 'date-fns';
 import EnterpriseAccountAPI from '../../api/enterprise/account';
 import { throwErrorMessage } from '../utils/api';
 import { getLanguageDirection } from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
+import { applyAccountTheme } from 'dashboard/helper/themeHelper';
 
 const findRecordById = ($state, id) =>
   $state.records.find(record => record.id === Number(id)) || {};
@@ -165,8 +166,14 @@ export const mutations = {
       ...data,
     };
   },
-  [types.default.ADD_ACCOUNT]: MutationHelpers.setSingleRecord,
-  [types.default.EDIT_ACCOUNT]: MutationHelpers.update,
+  [types.default.ADD_ACCOUNT]($state, data) {
+    MutationHelpers.setSingleRecord($state, data);
+    applyAccountTheme(data.settings || {});
+  },
+  [types.default.EDIT_ACCOUNT]($state, data) {
+    MutationHelpers.update($state, data);
+    applyAccountTheme(data.settings || {});
+  },
   [types.default.SET_ACCOUNT_LIMITS]: MutationHelpers.updateAttributes,
 };
 

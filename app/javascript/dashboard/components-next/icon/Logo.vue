@@ -1,20 +1,31 @@
 <script setup>
-import { useAttrs } from 'vue';
-import { useMapGetter } from 'dashboard/composables/store';
+import { computed, useAttrs } from 'vue';
+import { useMapGetter, useStoreGetters } from 'dashboard/composables/store';
 
 const attrs = useAttrs();
 const globalConfig = useMapGetter('globalConfig/get');
+const getters = useStoreGetters();
+
+const accountId = computed(() => {
+  const match = window.location.pathname.match(/\/accounts\/(\d+)/);
+  return match ? Number(match[1]) : null;
+});
+const account = computed(() => accountId.value ? getters['accounts/getAccount'].value(accountId.value) : {});
+const logoSrc = computed(() =>
+  account.value?.settings?.custom_logo_url ||
+  globalConfig.value?.logoThumbnail ||
+  null
+);
 </script>
 
 <template>
   <img
-    v-if="globalConfig.logoThumbnail"
+    v-if="logoSrc"
     v-bind="attrs"
-    :src="globalConfig.logoThumbnail"
+    :src="logoSrc"
   />
   <svg
     v-else
-    v-once
     v-bind="attrs"
     width="16"
     height="16"
@@ -25,7 +36,7 @@ const globalConfig = useMapGetter('globalConfig/get');
     <g clip-path="url(#woot-logo-clip-2342424e23u32098)">
       <path
         d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z"
-        fill="#2781F6"
+        fill="rgb(var(--n-brand))"
       />
       <path
         d="M11.4172 11.4172H7.70831C5.66383 11.4172 4 9.75328 4 7.70828C4 5.66394 5.66383 4 7.70835 4C9.75339 4 11.4172 5.66394 11.4172 7.70828V11.4172Z"

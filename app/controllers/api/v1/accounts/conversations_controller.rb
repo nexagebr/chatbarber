@@ -133,6 +133,27 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     @conversation.save!
   end
 
+  def lead_source
+    lead_source_params = params.permit(
+      lead_source: [:channel, :source, :medium, :campaign, :term, :content,
+                    :gclid, :fbclid, :ttclid, :msclkid, :referer_url, :captured_at,
+                    ad: [:source_id, :source_type, :headline, :body, :media_type, :ctwa_clid]]
+    )[:lead_source]
+
+    return head :unprocessable_entity if lead_source_params.blank?
+
+    lead_source_data = lead_source_params.to_h.merge('captured_at' => Time.current.iso8601)
+    lead_source_data['channel'] ||= 'manual'
+
+    ::Crm::AttributeLeadSource.new(
+      conversation: @conversation,
+      lead_source: lead_source_data,
+      force_update: true
+    ).perform
+
+    render json: { lead_source: @conversation.reload.additional_attributes['lead_source'] }
+  end
+
   def destroy
     authorize @conversation, :destroy?
     ::DeleteObjectJob.perform_later(@conversation, Current.user, request.ip)

@@ -61,7 +61,7 @@ const emitNewAccount = () => {
         :title="currentAccount.name"
         @click="toggle"
       >
-        <Logo class="size-7" />
+        <Logo class="size-7 rounded-lg overflow-hidden" />
       </button>
       <!-- Expanded view: Account name trigger -->
       <button

@@ -56,6 +56,7 @@ const defaultState = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
+  identifier: '',
   additionalAttributes: {
     description: '',
     companyName: '',
@@ -94,6 +95,7 @@ const prepareStateBasedOnProps = () => {
     name = '',
     email: emailAddress,
     phoneNumber,
+    identifier,
     additionalAttributes = {},
   } = props.contactData || {};
   const { firstName, lastName } = splitName(name || '');
@@ -113,6 +115,7 @@ const prepareStateBasedOnProps = () => {
     lastName,
     email: emailAddress,
     phoneNumber,
+    identifier: identifier || '',
     additionalAttributes: {
       description,
       companyName,
@@ -220,6 +223,15 @@ const resetForm = () => {
   Object.assign(state, defaultState);
 };
 
+const generateUUID = () => {
+  state.identifier = crypto.randomUUID();
+  emit('update', state);
+};
+
+const onIdentifierInput = () => {
+  emit('update', state);
+};
+
 watch(
   () => props.contactData?.id,
   id => {
@@ -287,6 +299,42 @@ defineExpose({
         </template>
       </div>
     </div>
+    <!-- Identifier / UUID field -->
+    <div class="flex flex-col items-start gap-2">
+      <span class="py-1 text-sm font-medium text-n-slate-12">
+        {{ t('CONTACTS_LAYOUT.CARD.IDENTIFIER.TITLE') }}
+      </span>
+      <div class="flex items-center gap-2 w-full">
+        <div
+          class="flex items-center gap-2 flex-1 h-8 px-2 rounded-lg"
+          :class="{
+            'bg-n-alpha-2 dark:bg-n-solid-2': isDetailsView,
+            'bg-n-alpha-2 dark:bg-n-solid-3': !isDetailsView,
+          }"
+        >
+          <span class="i-ph-fingerprint text-n-slate-10 size-4 flex-shrink-0" />
+          <input
+            v-model="state.identifier"
+            class="flex-1 min-w-0 text-sm bg-transparent outline-none reset-base text-n-slate-12 dark:text-n-slate-12 placeholder:text-n-slate-10 font-mono"
+            :placeholder="t('CONTACTS_LAYOUT.CARD.IDENTIFIER.PLACEHOLDER')"
+            @input="onIdentifierInput"
+          />
+        </div>
+        <button
+          v-tooltip="t('CONTACTS_LAYOUT.CARD.IDENTIFIER.GENERATE_TOOLTIP')"
+          type="button"
+          class="flex items-center gap-1 px-2.5 h-8 text-xs font-medium text-n-brand border border-n-brand/30 rounded-lg bg-n-brand/5 hover:bg-n-brand/10 transition-colors flex-shrink-0"
+          @click="generateUUID"
+        >
+          <span class="i-lucide-refresh-cw text-xs" />
+          UUID
+        </button>
+      </div>
+      <p class="text-xs text-n-slate-9">
+        {{ t('CONTACTS_LAYOUT.CARD.IDENTIFIER.DESCRIPTION') }}
+      </p>
+    </div>
+
     <div class="flex flex-col items-start gap-2">
       <span class="py-1 text-sm font-medium text-n-slate-12">
         {{ t('CONTACTS_LAYOUT.CARD.SOCIAL_MEDIA.TITLE') }}

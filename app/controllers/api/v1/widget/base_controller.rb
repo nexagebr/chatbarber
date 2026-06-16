@@ -21,7 +21,20 @@ class Api::V1::Widget::BaseController < ApplicationController
   end
 
   def create_conversation
-    ::Conversation.create!(conversation_params)
+    conversation = ::Conversation.create!(conversation_params)
+    attach_lead_source(conversation)
+    conversation
+  end
+
+  def attach_lead_source(conversation)
+    referer_url = permitted_params[:message][:referer_url]
+    lead_source = ::Crm::LeadSourceParser.from_url(referer_url)
+    return if lead_source.blank?
+
+    ::Crm::AttributeLeadSource.new(
+      conversation: conversation,
+      lead_source: lead_source
+    ).perform
   end
 
   def inbox

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { getInboxIconByType } from 'dashboard/helper/inbox';
 import { useRouter, useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import { frontendURL, conversationUrl } from 'dashboard/helper/URLHelper.js';
 import { dynamicTime, shortTimestamp } from 'shared/helpers/timeHelper';
 
@@ -32,6 +33,7 @@ const props = defineProps({
 
 const router = useRouter();
 const route = useRoute();
+const store = useStore();
 
 const cardMessagePreviewWithMetaRef = ref(null);
 
@@ -46,6 +48,10 @@ const currentContactStatus = computed(
 const inbox = computed(() => props.stateInbox);
 
 const inboxName = computed(() => inbox.value?.name);
+
+const kanbanFunnelName = computed(() =>
+  store.getters['kanbanPlacements/getFunnelNameForConversation'](props.conversation.id)
+);
 
 const inboxIcon = computed(() => {
   const { channelType, medium } = inbox.value;
@@ -99,10 +105,20 @@ const onCardClick = e => {
     />
     <div class="flex flex-col w-full gap-1 min-w-0">
       <div class="flex items-center justify-between h-6 gap-2">
-        <h4 class="text-base font-medium truncate text-n-slate-12">
-          {{ currentContactName }}
-        </h4>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <h4 class="text-base font-medium truncate text-n-slate-12">
+            {{ currentContactName }}
+          </h4>
+          <span
+            v-if="kanbanFunnelName"
+            class="inline-flex items-center gap-1 flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+            style="background: color-mix(in srgb, rgb(var(--n-brand)) 10%, transparent); color: rgb(var(--n-brand));"
+          >
+            <i class="i-lucide-git-branch-plus" style="font-size:9px" />
+            {{ kanbanFunnelName }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
           <CardPriorityIcon :priority="conversation.priority || null" />
           <div
             v-tooltip.left="inboxName"

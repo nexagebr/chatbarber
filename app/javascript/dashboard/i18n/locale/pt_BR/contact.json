@@ -445,6 +445,12 @@
         "SUCCESS_MESSAGE": "Contato atualizado com sucesso",
         "ERROR_MESSAGE": "Não foi possível atualizar o contato. Por favor, tente mais tarde."
       },
+      "IDENTIFIER": {
+        "TITLE": "Identificador único (UUID)",
+        "PLACEHOLDER": "Ex: 550e8400-e29b-41d4-a716-446655440000",
+        "DESCRIPTION": "Use para integrar com sistemas externos. O ID é único por conta.",
+        "GENERATE_TOOLTIP": "Gerar novo UUID aleatório"
+      },
       "SOCIAL_MEDIA": {
         "TITLE": "Editar redes sociais",
         "FORM": {
@@ -501,9 +507,11 @@
     "SIDEBAR": {
       "TABS": {
         "ATTRIBUTES": "Atributos",
+        "ACTIVITY": "Atividade",
         "HISTORY": "Histórico",
         "NOTES": "Notas",
-        "MERGE": "Mesclar"
+        "MERGE": "Mesclar",
+        "CRM": "Funil / CRM"
       },
       "HISTORY": {
         "EMPTY_STATE": "Não há conversas anteriores associadas a este contato"
@@ -650,6 +658,78 @@
         "DISCARD": "Descartar",
         "SEND": "Enviar ({keyCode})"
       }
+    }
+  },
+  "CONTACTS_KANBAN": {
+    "TITLE": "Kanban de Contatos",
+    "SUBTITLE": "Gerencie seus contatos por estágios",
+    "REFRESH": "Atualizar",
+    "SETTINGS_BTN": "Configurar Estágios",
+    "UNNAMED": "Conversa Sem Nome",
+    "CARD": {
+      "NO_AGENT": "Sem agente"
+    },
+    "STAGES": {
+      "NEW": "Novo",
+      "CONTACTED": "Contatado",
+      "QUALIFIED": "Qualificado",
+      "ENGAGED": "Engajado",
+      "INACTIVE": "Inativo"
+    },
+    "SETTINGS": {
+      "TITLE": "Configurações do Kanban",
+      "DESCRIPTION": "Gerencie os estágios do kanban e vincule tags para movimentação automática de conversas",
+      "STAGES_LIST": "Estágios",
+      "ADD_STAGE": "Adicionar Estágio",
+      "EDIT_STAGE": "Editar Estágio",
+      "NEW_STAGE": "Novo Estágio",
+      "EDIT_STAGE_DESC": "Modifique as informações do estágio",
+      "NEW_STAGE_DESC": "Crie um novo estágio no funil",
+      "STAGE_NAME": "Nome do Estágio",
+      "STAGE_NAME_PLACEHOLDER": "Ex: Em negociação",
+      "STAGE_COLOR": "Cor",
+      "LINKED_TAG": "Tag Vinculada",
+      "SELECT_TAG": "Selecione uma tag",
+      "OPTIONAL": "(Opcional)",
+      "NO_TAG": "Nenhuma tag vinculada",
+      "NO_TAGS": "Nenhuma tag disponível",
+      "TAG_DESCRIPTION": "Quando esta tag for aplicada a uma conversa, ela será movida automaticamente para este estágio",
+      "STAGE_CREATED": "Estágio criado com sucesso",
+      "STAGE_UPDATED": "Estágio atualizado com sucesso",
+      "STAGE_DELETED": "Estágio removido com sucesso",
+      "STAGE_ERROR": "Erro ao salvar estágio",
+      "DELETE_CONFIRM": "Tem certeza que deseja remover este estágio?",
+      "DELETE_ERROR": "Erro ao remover estágio",
+      "ORDER_SAVED": "Ordem dos estágios atualizada",
+      "ORDER_ERROR": "Erro ao reordenar estágios",
+      "LOAD_ERROR": "Erro ao carregar estágios",
+      "NAME_REQUIRED": "O nome do estágio é obrigatório",
+      "LOADING": "Carregando...",
+      "NO_STAGES": "Nenhum estágio criado ainda",
+      "ADD_FIRST_STAGE": "Criar primeiro estágio",
+      "EDIT_NOTICE": "As conversas neste estágio não serão afetadas",
+      "SAVE": "Salvar",
+      "CANCEL": "Cancelar",
+      "CLOSE": "Fechar"
+    },
+    "COLORS": {
+      "BLUE": "Azul",
+      "GREEN": "Verde",
+      "YELLOW": "Amarelo",
+      "RED": "Vermelho",
+      "PURPLE": "Roxo",
+      "PINK": "Rosa",
+      "INDIGO": "Índigo",
+      "GRAY": "Cinza"
+    }
+  },
+  "KANBAN": {
+    "FUNNEL": {
+      "TITLE": "Funil de Contatos",
+      "SUBTITLE": "Gerencie seus contatos através do funil de vendas",
+      "REFRESH": "Atualizar",
+      "SETTINGS_BTN": "Configurar Estágios",
+      "UNNAMED": "Contato Sem Nome"
     }
   }
 }

@@ -11,6 +11,7 @@ import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/Cont
 import ContactsForm from 'dashboard/components-next/Contacts/ContactsForm/ContactsForm.vue';
 import ConfirmContactDeleteDialog from 'dashboard/components-next/Contacts/ContactsForm/ConfirmContactDeleteDialog.vue';
 import Policy from 'dashboard/components/policy.vue';
+import ContactKanbanPanel from 'dashboard/components-next/Contacts/ContactsSidebar/ContactKanbanPanel.vue';
 
 const props = defineProps({
   selectedContact: {
@@ -138,10 +139,19 @@ const handleAvatarDelete = async () => {
         <div class="flex flex-col gap-1.5">
           <span
             v-if="selectedContact?.identifier"
-            class="inline-flex items-center gap-1 text-sm text-n-slate-11"
+            class="inline-flex items-center gap-1.5 text-sm text-n-slate-11 group"
           >
-            <span class="i-ph-user-gear text-n-slate-10 size-4" />
-            {{ selectedContact?.identifier }}
+            <span class="i-ph-fingerprint text-n-slate-10 size-4 flex-shrink-0" />
+            <span class="font-mono text-xs text-n-slate-11 truncate max-w-[200px]" :title="selectedContact.identifier">
+              {{ selectedContact.identifier }}
+            </span>
+            <button
+              v-tooltip="'Copiar ID'"
+              class="opacity-0 group-hover:opacity-100 transition-opacity"
+              @click="navigator.clipboard.writeText(selectedContact.identifier)"
+            >
+              <span class="i-lucide-copy text-n-slate-9 hover:text-n-brand size-3.5" />
+            </button>
           </span>
           <span class="inline-flex items-center gap-1 text-sm text-n-slate-11">
             <span
@@ -160,6 +170,10 @@ const handleAvatarDelete = async () => {
       </div>
       <ContactLabels :contact-id="selectedContact?.id" />
     </div>
+    <ContactKanbanPanel
+      v-if="selectedContact?.id"
+      :contact-id="selectedContact.id"
+    />
     <div class="flex flex-col items-start gap-6">
       <ContactsForm
         ref="contactsFormRef"

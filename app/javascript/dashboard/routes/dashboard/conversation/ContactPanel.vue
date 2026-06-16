@@ -21,6 +21,8 @@ import Draggable from 'vuedraggable';
 import MacrosList from './Macros/List.vue';
 import ShopifyOrdersList from 'dashboard/components/widgets/conversation/ShopifyOrdersList.vue';
 import SidebarActionsHeader from 'dashboard/components-next/SidebarActionsHeader.vue';
+import ConversationKanbanPanel from './ConversationKanbanPanel.vue';
+import ConversationLeadSourcePanel from './ConversationLeadSourcePanel.vue';
 import LinearIssuesList from 'dashboard/components/widgets/conversation/linear/IssuesList.vue';
 import LinearSetupCTA from 'dashboard/components/widgets/conversation/linear/LinearSetupCTA.vue';
 
@@ -295,6 +297,18 @@ onMounted(() => {
               "
             >
               <ContactNotes :contact-id="contactId" />
+            </AccordionItem>
+          </div>
+          <div v-else-if="element.name === 'lead_source'">
+            <AccordionItem
+              :title="$t('CONVERSATION_SIDEBAR.ACCORDION.LEAD_SOURCE')"
+              :is-open="isContactSidebarItemOpen('is_lead_source_open')"
+              compact
+              @toggle="
+                value => toggleSidebarUIState('is_lead_source_open', value)
+              "
+            >
+              <ConversationLeadSourcePanel :conversation-id="conversationId" />
             </AccordionItem>
           </div>
         </template>

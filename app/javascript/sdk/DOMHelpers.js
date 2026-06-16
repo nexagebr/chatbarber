@@ -39,6 +39,35 @@ export const removeClasses = (elm, classes) => {
   elm.classList.remove(...classes.split(' '));
 };
 
+const TRACKING_PARAMS = [
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'gclid', 'fbclid', 'ttclid', 'msclkid',
+];
+const SESSION_KEY = 'cw_landing_url';
+
+// Persist the landing URL (with tracking params) in sessionStorage on first load only.
+// This survives SPA navigation so gclid/utm are still available when the chat opens.
+const persistLandingUrl = url => {
+  try {
+    if (sessionStorage.getItem(SESSION_KEY)) return; // already captured — keep first-touch
+    const parsed = new URL(url);
+    const hasTracking = TRACKING_PARAMS.some(p => parsed.searchParams.has(p));
+    if (hasTracking) {
+      sessionStorage.setItem(SESSION_KEY, url);
+    }
+  } catch (_) {
+    // ignore invalid URLs or environments without sessionStorage
+  }
+};
+
+export const getLandingUrl = () => {
+  try {
+    return sessionStorage.getItem(SESSION_KEY) || window.referrerURL || '';
+  } catch (_) {
+    return window.referrerURL || '';
+  }
+};
+
 export const onLocationChange = ({ referrerURL, referrerHost }) => {
   IFrameHelper.events.onLocationChange({
     referrerURL,
@@ -53,6 +82,8 @@ export const onLocationChangeListener = () => {
     childList: true,
     subtree: true,
   };
+  // Capture tracking params from the initial landing URL before SPA navigation changes it
+  persistLandingUrl(oldHref);
   onLocationChange({
     referrerURL: oldHref,
     referrerHost,

@@ -1,8 +1,21 @@
 import { buildSearchParamsWithLocale } from '../helpers/urlParamsHelper';
 import { generateEventParams } from './events';
 
+const SESSION_KEY = 'cw_landing_url';
+
+// Returns the landing URL that was captured at page-load time (see SDK DOMHelpers).
+// Falls back to the current referrerURL set by the SDK on each navigation.
+const getLandingUrl = () => {
+  try {
+    return sessionStorage.getItem(SESSION_KEY) || window.referrerURL || '';
+  } catch (_) {
+    return window.referrerURL || '';
+  }
+};
+
 const createConversation = params => {
-  const referrerURL = window.referrerURL || '';
+  // Prefer the original landing URL (preserves gclid/utm even after SPA navigation)
+  const referrerURL = getLandingUrl();
   const search = buildSearchParamsWithLocale(window.location.search);
   return {
     url: `/api/v1/widget/conversations${search}`,

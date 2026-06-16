@@ -86,6 +86,33 @@ export default {
         this.action_params = value;
       },
     },
+    scheduledMessageContent: {
+      get() {
+        return Array.isArray(this.action_params) ? this.action_params[0] || '' : '';
+      },
+      set(value) {
+        const delay = Array.isArray(this.action_params) ? (this.action_params[1] || '60') : '60';
+        this.action_params = [value, delay];
+      },
+    },
+    scheduledMessageDelay: {
+      get() {
+        return Array.isArray(this.action_params) ? (this.action_params[1] || '60') : '60';
+      },
+      set(value) {
+        const content = Array.isArray(this.action_params) ? (this.action_params[0] || '') : '';
+        this.action_params = [content, String(value)];
+      },
+    },
+    scheduledMessagePresets() {
+      return [
+        { value: '15', label: this.$t('AUTOMATION.ACTION.SCHEDULED_PRESETS.MIN_15') },
+        { value: '30', label: this.$t('AUTOMATION.ACTION.SCHEDULED_PRESETS.MIN_30') },
+        { value: '60', label: this.$t('AUTOMATION.ACTION.SCHEDULED_PRESETS.HOUR_1') },
+        { value: '240', label: this.$t('AUTOMATION.ACTION.SCHEDULED_PRESETS.HOUR_4') },
+        { value: '1440', label: this.$t('AUTOMATION.ACTION.SCHEDULED_PRESETS.DAY_1') },
+      ];
+    },
   },
   methods: {
     removeAction() {
@@ -205,6 +232,51 @@ export default {
       :placeholder="$t('AUTOMATION.ACTION.TEAM_MESSAGE_INPUT_PLACEHOLDER')"
       class="action-message"
     />
+    <div v-if="inputType === 'scheduled_message'" class="mt-2 space-y-3">
+      <WootMessageEditor
+        v-model="scheduledMessageContent"
+        rows="3"
+        enable-variables
+        :placeholder="$t('AUTOMATION.ACTION.TEAM_MESSAGE_INPUT_PLACEHOLDER')"
+        class="action-message"
+      />
+      <div class="rounded-lg border border-n-weak bg-n-alpha-1 p-3 space-y-2">
+        <p class="text-xs font-semibold text-n-slate-11 uppercase tracking-wide">
+          {{ $t('AUTOMATION.ACTION.SCHEDULED_MESSAGE_DELAY_LABEL') }}
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            v-for="preset in scheduledMessagePresets"
+            :key="preset.value"
+            type="button"
+            class="px-2.5 py-1 rounded-md text-xs font-medium border transition-all"
+            :class="String(scheduledMessageDelay) === String(preset.value)
+              ? 'bg-n-brand/10 text-n-brand border-n-brand/30'
+              : 'bg-n-alpha-1 text-n-slate-10 border-n-weak hover:text-n-slate-12 hover:border-n-slate-7'"
+            @click="scheduledMessageDelay = String(preset.value)"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <span class="text-xs text-n-slate-10 flex-shrink-0">{{ $t('AUTOMATION.ACTION.SCHEDULED_MESSAGE_CUSTOM') }}</span>
+          <input
+            v-model="scheduledMessageDelay"
+            type="number"
+            min="1"
+            max="43200"
+            class="w-20 px-2 py-1 text-sm border border-n-weak rounded bg-n-surface-1 text-n-slate-12 focus:outline-none focus:ring-1 focus:ring-n-brand"
+          />
+          <span class="text-xs text-n-slate-10">min</span>
+          <span
+            v-if="scheduledMessageDelay && Number(scheduledMessageDelay) >= 60"
+            class="text-xs text-n-slate-9"
+          >
+            ({{ (Number(scheduledMessageDelay) / 60).toFixed(Number(scheduledMessageDelay) % 60 === 0 ? 0 : 1) }}h)
+          </span>
+        </div>
+      </div>
+    </div>
     <p v-if="errorMessage" class="filter-error">
       {{ errorMessage }}
     </p>

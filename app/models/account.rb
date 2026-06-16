@@ -87,6 +87,7 @@ class Account < ApplicationRecord
 
   store_accessor :settings, :audio_transcriptions, :auto_resolve_label
   store_accessor :settings, :captain_models, :captain_features
+  store_accessor :settings, :custom_color, :custom_logo_url
 
   has_many :account_users, dependent: :destroy_async
   has_many :agent_bot_inboxes, dependent: :destroy_async
@@ -112,6 +113,18 @@ class Account < ApplicationRecord
   has_many :tiktok_channels, dependent: :destroy_async, class_name: '::Channel::Tiktok'
   has_many :hooks, dependent: :destroy_async, class_name: 'Integrations::Hook'
   has_many :inboxes, dependent: :destroy_async
+  has_many :kanban_funnels, dependent: :destroy_async
+  has_many :kanban_stages, dependent: :destroy_async
+  has_many :kanban_loss_reasons, dependent: :destroy_async
+  has_many :knowledge_bases, class_name: 'KnowledgeBase', dependent: :destroy_async
+  has_many :inbox_knowledge_items, dependent: :destroy_async
+  has_many :products, dependent: :destroy_async
+  has_many :appointments, dependent: :destroy_async
+  has_many :barber_services, dependent: :destroy_async
+  has_many :professionals, dependent: :destroy_async
+  has_many :branches, dependent: :destroy_async
+  has_many :holidays, dependent: :destroy_async
+  has_many :scheduled_messages, dependent: :destroy_async
   has_many :labels, dependent: :destroy_async
   has_many :line_channels, dependent: :destroy_async, class_name: '::Channel::Line'
   has_many :mentions, dependent: :destroy_async

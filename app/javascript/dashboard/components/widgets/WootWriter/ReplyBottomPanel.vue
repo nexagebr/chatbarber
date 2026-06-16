@@ -129,6 +129,7 @@ export default {
     'selectWhatsappTemplate',
     'selectContentTemplate',
     'toggleQuotedReply',
+    'openSchedule',
   ],
   setup() {
     const { setSignatureFlagForInbox, fetchSignatureFlagFromUISettings } =
@@ -337,6 +338,14 @@ export default {
         faded
         sm
         @click="toggleMessageSignature"
+      />
+      <NextButton
+        v-tooltip.top-end="'Agendar mensagem'"
+        icon="i-ph-clock-countdown"
+        slate
+        faded
+        sm
+        @click="$emit('openSchedule')"
       />
       <NextButton
         v-if="showQuotedReplyToggle"

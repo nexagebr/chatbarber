@@ -1,6 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import ConversationHeader from './ConversationHeader.vue';
+import ConversationKanbanBar from './ConversationKanbanBar.vue';
 import DashboardAppFrame from '../DashboardApp/Frame.vue';
 import EmptyState from './EmptyState/EmptyState.vue';
 import MessagesView from './MessagesView.vue';
@@ -8,6 +9,7 @@ import MessagesView from './MessagesView.vue';
 export default {
   components: {
     ConversationHeader,
+    ConversationKanbanBar,
     DashboardAppFrame,
     EmptyState,
     MessagesView,
@@ -91,7 +93,7 @@ export default {
 
 <template>
   <div
-    class="conversation-details-wrap flex flex-col min-w-0 w-full bg-n-surface-1 relative"
+    class="conversation-details-wrap flex flex-col min-w-0 w-full h-full overflow-hidden bg-n-surface-1 relative"
     :class="{
       'border-l rtl:border-l-0 rtl:border-r border-n-weak': !isOnExpandedLayout,
     }"
@@ -100,6 +102,11 @@ export default {
       v-if="currentChat.id"
       :chat="currentChat"
       :show-back-button="isOnExpandedLayout && !isInboxView"
+    />
+    <ConversationKanbanBar
+      v-if="currentChat.id"
+      :conversation-id="currentChat.id"
+      :conversation="currentChat"
     />
     <woot-tabs
       v-if="dashboardApps.length && currentChat.id"
