@@ -328,7 +328,6 @@ GEM
     fcm (1.0.8)
       faraday (>= 1.0.0, < 3.0)
       googleauth (~> 1)
-    ffi (1.17.2)
     ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
@@ -408,9 +407,6 @@ GEM
       signet (>= 0.16, < 2.a)
     groupdate (6.2.1)
       activesupport (>= 5.2)
-    grpc (1.72.0)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
     grpc (1.72.0-arm64-darwin)
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
@@ -508,8 +504,6 @@ GEM
       launchy (>= 2.2, < 4)
     libdatadog (18.1.0.1.0)
     libdatadog (18.1.0.1.0-x86_64-linux)
-    libddwaf (1.24.1.0.3)
-      ffi (~> 1.0)
     libddwaf (1.24.1.0.3-arm64-darwin)
       ffi (~> 1.0)
     libddwaf (1.24.1.0.3-x86_64-darwin)
@@ -550,7 +544,6 @@ GEM
     mime-types-data (3.2023.0218.1)
     mini_magick (4.12.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (5.25.5)
     mock_redis (0.36.0)
       ruby2_keywords
@@ -582,9 +575,6 @@ GEM
     newrelic_rpm (9.6.0)
       base64
     nio4r (2.7.3)
-    nokogiri (1.18.9)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.18.9-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.18.9-x86_64-darwin)
@@ -850,8 +840,6 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    scout_apm (5.3.3)
-      parser
     scss_lint (0.60.0)
       sass (~> 3.5, >= 3.5.5)
     searchkick (5.5.2)
@@ -1009,7 +997,6 @@ PLATFORMS
   arm64-darwin-20
   arm64-darwin-21
   arm64-darwin-22
-  ruby
   x86_64-darwin-18
   x86_64-darwin-20
   x86_64-darwin-21
@@ -1127,7 +1114,6 @@ DEPENDENCIES
   ruby-openai
   ruby_llm (>= 1.8.2)
   ruby_llm-schema
-  scout_apm
   scss_lint
   searchkick
   seed_dump
