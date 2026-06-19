@@ -22,6 +22,12 @@ class TriggerScheduledItemsJob < ApplicationJob
 
     # Job to send scheduled messages
     SendScheduledMessagesJob.perform_later
+
+    # Job to send appointment reminders
+    AppointmentRemindersJob.perform_later
+
+    # Job to send retention messages (win-back + birthday)
+    RetentionMessagesJob.perform_later
   end
 end
 

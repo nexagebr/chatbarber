@@ -6,6 +6,8 @@ import { useAlert } from 'dashboard/composables';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { availabilityAPI } from 'dashboard/api/professionals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
+import ReminderSettings from './ReminderSettings.vue';
+import RetentionSettings from './RetentionSettings.vue';
 
 const store         = useStore();
 const router        = useRouter();
@@ -509,6 +511,50 @@ async function saveAppointment() {
     useAlert('Erro ao salvar. Tente novamente.')
   }
 }
+
+// ── payment registration ──────────────────────────────────────────────────────
+const selectedPaymentMethod = ref('');
+const savingPayment = ref(false);
+
+const PAYMENT_METHODS = [
+  { key: 'dinheiro', label: 'Dinheiro' },
+  { key: 'pix',      label: 'Pix' },
+  { key: 'debito',   label: 'Débito' },
+  { key: 'credito',  label: 'Crédito' },
+];
+
+async function registerPayment() {
+  if (!selectedPaymentMethod.value) { useAlert('Selecione a forma de pagamento.'); return; }
+  const appt = editTarget.value;
+  if (!appt) return;
+  savingPayment.value = true;
+  try {
+    const totalPrice = appt.total_price || appt.services?.reduce((s,sv)=>s+(parseFloat(sv.price)||0),0) || 0;
+    await store.dispatch('cashTransactions/createTransaction', {
+      transaction_type: 'income',
+      payment_method:   selectedPaymentMethod.value,
+      description:      appt.contact?.name ? `Atendimento – ${appt.contact.name}` : 'Atendimento',
+      amount:           totalPrice,
+      category:         'servico',
+      date:             new Date(appt.scheduled_at).toISOString(),
+      appointment_id:   appt.id,
+      professional_id:  appt.professional?.id ?? null,
+      branch_id:        appt.branch_id ?? null,
+    });
+    // refresh so editTarget.payment shows up
+    await store.dispatch('appointments/fetchAppointments', { from: appt.scheduled_at, to: appt.scheduled_at });
+    fetchDay();
+    useAlert('Pagamento registrado!');
+    selectedPaymentMethod.value = '';
+    closeModal();
+  } catch(e) {
+    console.error('[agenda] registerPayment error:', e);
+    useAlert('Erro ao registrar pagamento.');
+  } finally {
+    savingPayment.value = false;
+  }
+}
+
 // duracao is stored in seconds in DB; duration_minutes (from serializer) is already in minutes
 function prodDurMin(p) {
   if (p.duration_minutes != null) return p.duration_minutes       // from appointments serializer (already minutes)
@@ -541,6 +587,12 @@ async function confirmDelete() {
 
 // hover card state
 const hoveredCard = ref(null)
+
+// reminder settings modal
+const showReminderSettings = ref(false)
+
+// retention settings modal
+const showRetentionSettings = ref(false)
 
 // products for appointment form (use products store, fallback to services)
 const formProducts = computed(() => {
@@ -723,12 +775,28 @@ const formProducts = computed(() => {
         </button>
       </div>
 
+      <!-- Retenção button -->
+      <button class="ag-reminder-btn" @click.stop="showRetentionSettings = true" title="Configurar retenção / fidelização">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+
+      <!-- Lembretes button -->
+      <button class="ag-reminder-btn" @click.stop="showReminderSettings = true" title="Configurar lembretes automáticos">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+
       <!-- New button -->
       <button class="ag-new-btn" @click.stop="openCreate()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo
       </button>
     </header>
+
+    <!-- Reminder settings modal -->
+    <ReminderSettings v-if="showReminderSettings" @close="showReminderSettings = false" />
+
+    <!-- Retention settings modal -->
+    <RetentionSettings v-if="showRetentionSettings" @close="showRetentionSettings = false" />
 
     <!-- ══ BODY ═══════════════════════════════════════════════════════════════ -->
     <div class="ag-body">
@@ -1158,6 +1226,38 @@ const formProducts = computed(() => {
                 <textarea v-model="form.notes" class="mo-inp" rows="2" style="height:auto;padding:8px 10px;resize:none" placeholder="Observações..." />
               </div>
 
+              <!-- ── pagamento ── mostrar só em edição de concluído ──────── -->
+              <div v-if="editTarget && form.status === 'completed'" class="mo-payment-box">
+                <p class="mo-lbl" style="margin-bottom:8px">Pagamento</p>
+
+                <!-- já pago -->
+                <div v-if="editTarget.payment" class="mo-paid-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                  Pago via {{ { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito' }[editTarget.payment.payment_method] ?? editTarget.payment.payment_method }}
+                  · R$ {{ Number(editTarget.payment.amount).toFixed(2).replace('.',',') }}
+                </div>
+
+                <!-- ainda não pago -->
+                <template v-else>
+                  <div class="mo-pay-methods">
+                    <button
+                      v-for="m in PAYMENT_METHODS" :key="m.key"
+                      :class="['mo-pay-btn', { active: selectedPaymentMethod === m.key }]"
+                      type="button"
+                      @click="selectedPaymentMethod = m.key"
+                    >{{ m.label }}</button>
+                  </div>
+                  <button
+                    class="mo-register-pay-btn"
+                    type="button"
+                    :disabled="!selectedPaymentMethod || savingPayment"
+                    @click="registerPayment"
+                  >
+                    {{ savingPayment ? 'Registrando…' : 'Registrar pagamento' }}
+                  </button>
+                </template>
+              </div>
+
               <div class="mo-foot">
                 <button type="button" class="mo-btn-cancel" @click="closeModal">Cancelar</button>
                 <button type="submit" class="mo-btn-save" :disabled="uiFlags.isSaving">
@@ -1541,4 +1641,19 @@ textarea.mo-inp { height:auto; }
 /* transitions */
 .mo-enter-active, .mo-leave-active { transition:opacity .15s ease; }
 .mo-enter-from, .mo-leave-to { opacity:0; }
+
+/* reminder button (beside Novo) */
+.ag-reminder-btn { height:30px; width:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid rgb(var(--border-strong)); background:rgb(var(--background-color)); color:rgb(var(--slate-8)); cursor:pointer; transition:all .15s; flex-shrink:0; }
+.ag-reminder-btn:hover { background:rgb(var(--surface-2)); color:rgb(var(--slate-12)); border-color:rgb(var(--border-strong)); }
+
+/* ── payment box inside modal ─────────────────────────────────────────────── */
+.mo-payment-box { background:rgb(var(--surface-2)); border:1px solid rgb(var(--border-weak)); border-radius:10px; padding:12px 14px; }
+.mo-paid-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#22c55e; background:#dcfce7; border-radius:8px; padding:6px 12px; }
+.mo-pay-methods { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px; }
+.mo-pay-btn { height:30px; border-radius:8px; border:1px solid rgb(var(--border-strong)); background:transparent; color:rgb(var(--slate-10)); font-size:11px; font-weight:600; cursor:pointer; transition:all .12s; }
+.mo-pay-btn:hover { background:rgb(var(--surface-1)); color:rgb(var(--slate-12)); }
+.mo-pay-btn.active { background:rgb(var(--n-brand,66 65 255)); color:#fff; border-color:rgb(var(--n-brand,66 65 255)); }
+.mo-register-pay-btn { width:100%; height:32px; border-radius:8px; background:rgb(var(--n-brand,66 65 255)); color:#fff; font-size:12px; font-weight:700; border:none; cursor:pointer; transition:opacity .15s; }
+.mo-register-pay-btn:hover:not(:disabled) { opacity:.88; }
+.mo-register-pay-btn:disabled { opacity:.4; cursor:not-allowed; }
 </style>

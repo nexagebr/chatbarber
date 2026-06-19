@@ -43,6 +43,7 @@ import kanbanStageAutomations from './modules/kanbanStageAutomations';
 import kanbanLossReasons from './modules/kanbanLossReasons';
 import inboxKnowledgeItems from './modules/inboxKnowledgeItems';
 import appointments from './modules/appointments';
+import cashTransactions from './modules/cashTransactions';
 import professionals from './modules/professionals';
 import knowledgeBases from './modules/knowledgeBases';
 import products from './modules/products';
@@ -119,6 +120,7 @@ export default createStore({
     kanbanPlacements,
     inboxKnowledgeItems,
     appointments,
+    cashTransactions,
     professionals,
     knowledgeBases,
     products,

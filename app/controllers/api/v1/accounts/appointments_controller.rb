@@ -3,7 +3,7 @@ class Api::V1::Accounts::AppointmentsController < Api::V1::Accounts::BaseControl
 
   def index
     @appointments = Current.account.appointments
-                           .includes(:professional, :contact, :products)
+                           .includes(:professional, :contact, :products, :cash_transaction)
                            .order(:scheduled_at)
 
     if params[:from].present? && params[:to].present?
@@ -42,7 +42,7 @@ class Api::V1::Accounts::AppointmentsController < Api::V1::Accounts::BaseControl
   private
 
   def fetch_appointment
-    @appointment = Current.account.appointments.find(params[:id])
+    @appointment = Current.account.appointments.includes(:cash_transaction).find(params[:id])
   end
 
   def appointment_params
@@ -97,6 +97,12 @@ class Api::V1::Accounts::AppointmentsController < Api::V1::Accounts::BaseControl
         email: a.contact.email,
       } : nil,
       services: svc_list,
+      payment: a.cash_transaction ? {
+        id:             a.cash_transaction.id,
+        payment_method: a.cash_transaction.payment_method,
+        amount:         a.cash_transaction.amount,
+        paid_at:        a.cash_transaction.created_at,
+      } : nil,
     }
   end
 end

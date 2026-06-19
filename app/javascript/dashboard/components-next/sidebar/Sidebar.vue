@@ -467,6 +467,12 @@ const menuItems = computed(() => {
       to: accountScopedRoute('agenda_index'),
     },
     {
+      name: 'Caixa',
+      label: 'Caixa',
+      icon: 'i-lucide-wallet',
+      to: accountScopedRoute('caixa_index'),
+    },
+    {
       name: 'Reports',
       label: t('SIDEBAR.REPORTS'),
       icon: 'i-lucide-chart-spline',

@@ -66,7 +66,19 @@ class Account < ApplicationRecord
             'help_center_search': { 'type': %w[boolean null] }
           },
           'additionalProperties': false
-        }
+        },
+        'appointment_reminder_enabled': { 'type': %w[boolean null] },
+        'appointment_reminder_hours_before': { 'type': %w[integer null], 'minimum': 1, 'maximum': 168 },
+        'appointment_reminder_message': { 'type': %w[string null] },
+        'appointment_reminder_template': { 'type': %w[object null], 'additionalProperties': true },
+        'retention_winback_enabled': { 'type': %w[boolean null] },
+        'retention_winback_days': { 'type': %w[integer null], 'minimum': 7, 'maximum': 365 },
+        'retention_winback_message': { 'type': %w[string null] },
+        'retention_winback_template': { 'type': %w[object null], 'additionalProperties': true },
+        'retention_birthday_enabled': { 'type': %w[boolean null] },
+        'retention_birthday_message': { 'type': %w[string null] },
+        'retention_birthday_template': { 'type': %w[object null], 'additionalProperties': true },
+        'retention_inbox_id': { 'type': %w[integer null] }
       },
     'required': [],
     'additionalProperties': true
@@ -88,6 +100,12 @@ class Account < ApplicationRecord
   store_accessor :settings, :audio_transcriptions, :auto_resolve_label
   store_accessor :settings, :captain_models, :captain_features
   store_accessor :settings, :custom_color, :custom_logo_url
+  store_accessor :settings, :appointment_reminder_enabled, :appointment_reminder_hours_before,
+                            :appointment_reminder_message, :appointment_reminder_template
+  store_accessor :settings, :retention_winback_enabled, :retention_winback_days,
+                            :retention_winback_message, :retention_winback_template,
+                            :retention_birthday_enabled, :retention_birthday_message,
+                            :retention_birthday_template, :retention_inbox_id
 
   has_many :account_users, dependent: :destroy_async
   has_many :agent_bot_inboxes, dependent: :destroy_async
@@ -120,6 +138,8 @@ class Account < ApplicationRecord
   has_many :inbox_knowledge_items, dependent: :destroy_async
   has_many :products, dependent: :destroy_async
   has_many :appointments, dependent: :destroy_async
+  has_many :cash_transactions, dependent: :destroy_async
+  has_many :commissions, dependent: :destroy_async
   has_many :barber_services, dependent: :destroy_async
   has_many :professionals, dependent: :destroy_async
   has_many :branches, dependent: :destroy_async
@@ -152,7 +172,7 @@ class Account < ApplicationRecord
   scope :with_auto_resolve, -> { where("(settings ->> 'auto_resolve_after')::int IS NOT NULL") }
 
   before_validation :validate_limit_keys
-  after_create_commit :notify_creation
+  after_create_commit :notify_creation, :seed_birthday_custom_attribute
   after_destroy :remove_account_sequences
 
   def agents
@@ -208,6 +228,20 @@ class Account < ApplicationRecord
 
   def notify_creation
     Rails.configuration.dispatcher.dispatch(ACCOUNT_CREATED, Time.zone.now, account: self)
+  end
+
+  # Ensure new accounts always have the birthday contact attribute available
+  def seed_birthday_custom_attribute
+    CustomAttributeDefinition.find_or_create_by!(
+      attribute_key:   'birthday',
+      attribute_model: CustomAttributeDefinition.attribute_models[:contact_attribute],
+      account_id:      id
+    ) do |attr|
+      attr.attribute_display_name = 'Aniversário'
+      attr.attribute_display_type = CustomAttributeDefinition.attribute_display_types[:date]
+    end
+  rescue StandardError => e
+    Rails.logger.error("[Account#seed_birthday_custom_attribute] account ##{id}: #{e.message}")
   end
 
   trigger.after(:insert).for_each(:row) do

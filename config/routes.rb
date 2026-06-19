@@ -106,6 +106,12 @@ Rails.application.routes.draw do
           resources :inbox_knowledge_items, only: [:index, :create, :update, :destroy]
           resources :products, only: [:index, :show, :create, :update, :destroy]
           resources :appointments, only: [:index, :show, :create, :update, :destroy]
+          resources :cash_transactions, only: [:index, :create, :destroy] do
+            collection { get :summary }
+          end
+          resources :commissions, only: [:index, :update] do
+            collection { get :summary }
+          end
           resources :services, only: [:index, :create, :update, :destroy]
           get 'availability', to: 'availability#index'
           resources :professionals, only: [:index, :show, :create, :update, :destroy] do
