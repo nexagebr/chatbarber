@@ -2,7 +2,7 @@ version: '3'
 
 services:
   base: &base
-    image: ghcr.io/nexagebr/chatbarber:latest
+    image: ghcr.io/ianelber/chat:develop
     env_file: .env ## Change this file for customized env variables
     volumes:
       - storage_data:/app/storage
