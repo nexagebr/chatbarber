@@ -11,19 +11,20 @@ services:
   rails:
     <<: *base
     depends_on:
-      - postgres
-      - redis
+      - chatwoot-postgres
+      - chatwoot-redis
     ports:
       - '127.0.0.1:3001:3000'
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=chatwoot-postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=chatbarber123
-      - POSTGRES_DB=chatwoot
+      - POSTGRES_PASSWORD=yo3o37ypgda990cm
+      - POSTGRES_DATABASE=chatwoot
+      - REDIS_URL=redis://chatwoot-redis:6379
     entrypoint: docker/entrypoints/rails.sh
     command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
     restart: always
@@ -31,21 +32,22 @@ services:
   sidekiq:
     <<: *base
     depends_on:
-      - postgres
-      - redis
+      - chatwoot-postgres
+      - chatwoot-redis
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=chatwoot-postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=chatbarber123
-      - POSTGRES_DB=chatwoot
+      - POSTGRES_PASSWORD=yo3o37ypgda990cm
+      - POSTGRES_DATABASE=chatwoot
+      - REDIS_URL=redis://chatwoot-redis:6379
     command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
     restart: always
 
-  postgres:
+  chatwoot-postgres:
     image: pgvector/pgvector:pg16
     restart: always
     ports:
@@ -55,14 +57,12 @@ services:
     environment:
       - POSTGRES_DB=chatwoot
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=chatbarber123
-      - POSTGRES_PORT=5432
+      - POSTGRES_PASSWORD=yo3o37ypgda990cm
 
-  redis:
+  chatwoot-redis:
     image: redis:alpine
     restart: always
-    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
-    env_file: .env
+    command: ["sh", "-c", "redis-server"]
     volumes:
       - redis_data:/data
     ports:
