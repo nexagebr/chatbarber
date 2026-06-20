@@ -30,5 +30,9 @@ do
   sleep 2;
 done
 
+# Run database migrations
+echo "Running database migrations..."
+bundle exec rails db:prepare
+
 # Execute the main process of the container
 exec "$@"
