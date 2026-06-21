@@ -35,6 +35,10 @@ const props = defineProps({
       return true;
     },
   },
+  campaignMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['sendMessage', 'resetTemplate', 'back']);
@@ -285,7 +289,7 @@ defineExpose({
             "
           />
         </div>
-        <div class="flex flex-wrap gap-1.5 mt-1 mb-1">
+        <div v-if="campaignMode" class="flex flex-wrap gap-1.5 mt-1 mb-1">
           <span class="text-xs text-n-slate-10 self-center">Variáveis dinâmicas:</span>
           <button
             v-for="token in campaignTokens"
