@@ -615,13 +615,13 @@ watch(funnelId, load);
           <template v-if="panelMode === 'automation-pick'">
             <div class="px-5 pt-4 pb-3 flex-shrink-0 flex flex-col gap-2">
               <!-- Search -->
-              <div class="flex h-9 items-center gap-2 px-3 rounded-lg border border-n-weak bg-n-solid-2 focus-within:border-n-brand/50 transition-colors">
+              <div class="flex h-9 items-center gap-2 px-3 rounded-lg border border-n-weak bg-n-solid-2">
                 <i class="i-lucide-search text-n-slate-7 text-sm flex-shrink-0" />
                 <input
                   v-model="actionSearch"
                   type="text"
                   placeholder="Buscar ação…"
-                  class="flex-1 bg-transparent text-sm text-n-slate-12 placeholder:text-n-slate-8 outline-none"
+                  class="flex-1 bg-transparent text-sm text-n-slate-12 placeholder:text-n-slate-8 outline-none focus:outline-none focus-visible:outline-none border-0"
                 />
               </div>
               <p class="text-xs text-n-slate-8 leading-relaxed">
