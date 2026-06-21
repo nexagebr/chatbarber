@@ -117,6 +117,7 @@ class Whatsapp::OneoffCampaignService
     rendered = render_template_body(template_name, processed_parameters) || "Campanha: #{template_name}"
 
     # Use insert (no callbacks) to avoid triggering Whatsapp::SendOnWhatsappService again
+    # source_id must be set so the WhatsApp frontend shows checkmark instead of clock
     Message.insert({
       account_id: campaign.account_id,
       inbox_id: inbox.id,
@@ -125,6 +126,7 @@ class Whatsapp::OneoffCampaignService
       content_type: Message.content_types[:text],
       content: rendered,
       status: Message.statuses[:sent],
+      source_id: "campaign_#{campaign.id}_contact_#{contact.id}",
       private: false,
       created_at: Time.current,
       updated_at: Time.current
@@ -141,8 +143,14 @@ class Whatsapp::OneoffCampaignService
     return nil unless body
 
     text = body['text'].to_s
-    processed_parameters.each_with_index do |param, idx|
-      text = text.gsub("{{#{idx + 1}}}", param[:text].to_s)
+
+    # processed_parameters is [{type:'body', parameters:[{type:'text',text:'val'}]}, ...]
+    body_component = processed_parameters&.find { |c| c[:type] == 'body' || c['type'] == 'body' }
+    body_params = body_component&.dig(:parameters) || body_component&.dig('parameters') || []
+
+    body_params.each_with_index do |param, idx|
+      value = param[:text] || param['text'] || ''
+      text = text.gsub("{{#{idx + 1}}}", value.to_s)
     end
     text
   rescue StandardError
