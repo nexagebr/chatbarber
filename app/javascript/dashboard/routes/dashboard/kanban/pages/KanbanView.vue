@@ -399,6 +399,17 @@ const commitMove = async (conversation, stageId, outcomeParams = {}) => {
         ...outcomeParams,
       });
 
+      if (outcomeParams.dealValue != null) {
+        store.commit('UPDATE_CONVERSATION', {
+          id: conversation.id,
+          additional_attributes: {
+            ...(conversation.additional_attributes || {}),
+            deal_value: outcomeParams.dealValue,
+          },
+          updated_at: Math.floor(Date.now() / 1000),
+        });
+      }
+
       const targetStage = kanbanStages.value?.find(s => s.id === stageId);
       if (targetStage?.label_id) {
         const labels = store.getters['labels/getLabels'];
