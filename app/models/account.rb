@@ -101,11 +101,11 @@ class Account < ApplicationRecord
   store_accessor :settings, :captain_models, :captain_features
   store_accessor :settings, :custom_color, :custom_logo_url
   store_accessor :settings, :appointment_reminder_enabled, :appointment_reminder_hours_before,
-                            :appointment_reminder_message, :appointment_reminder_template
+                 :appointment_reminder_message, :appointment_reminder_template
   store_accessor :settings, :retention_winback_enabled, :retention_winback_days,
-                            :retention_winback_message, :retention_winback_template,
-                            :retention_birthday_enabled, :retention_birthday_message,
-                            :retention_birthday_template, :retention_inbox_id
+                 :retention_winback_message, :retention_winback_template,
+                 :retention_birthday_enabled, :retention_birthday_message,
+                 :retention_birthday_template, :retention_inbox_id
 
   has_many :account_users, dependent: :destroy_async
   has_many :agent_bot_inboxes, dependent: :destroy_async
@@ -172,7 +172,7 @@ class Account < ApplicationRecord
   scope :with_auto_resolve, -> { where("(settings ->> 'auto_resolve_after')::int IS NOT NULL") }
 
   before_validation :validate_limit_keys
-  after_create_commit :notify_creation, :seed_birthday_custom_attribute
+  after_create_commit :notify_creation, :seed_birthday_custom_attribute, :enable_default_features
   after_destroy :remove_account_sequences
 
   def agents
@@ -233,15 +233,21 @@ class Account < ApplicationRecord
   # Ensure new accounts always have the birthday contact attribute available
   def seed_birthday_custom_attribute
     CustomAttributeDefinition.find_or_create_by!(
-      attribute_key:   'birthday',
+      attribute_key: 'birthday',
       attribute_model: CustomAttributeDefinition.attribute_models[:contact_attribute],
-      account_id:      id
+      account_id: id
     ) do |attr|
       attr.attribute_display_name = 'Aniversário'
       attr.attribute_display_type = CustomAttributeDefinition.attribute_display_types[:date]
     end
   rescue StandardError => e
     Rails.logger.error("[Account#seed_birthday_custom_attribute] account ##{id}: #{e.message}")
+  end
+
+  def enable_default_features
+    enable_feature!(:whatsapp_campaign)
+  rescue StandardError => e
+    Rails.logger.error("[Account#enable_default_features] account ##{id}: #{e.message}")
   end
 
   trigger.after(:insert).for_each(:row) do
