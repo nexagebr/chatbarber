@@ -93,10 +93,40 @@ class Whatsapp::OneoffCampaignService
                             parameters: processed_parameters
                           }, nil)
 
+    record_campaign_message(contact, name, personalized_params) if contact
+
   rescue StandardError => e
     Rails.logger.error "Failed to send WhatsApp template message to #{to}: #{e.message}"
     Rails.logger.error "Backtrace: #{e.backtrace.first(5).join('\n')}"
     nil
+  end
+
+  def record_campaign_message(contact, template_name, template_params)
+    contact_inbox = ContactInbox.find_or_create_by!(contact: contact, inbox: inbox) do |ci|
+      ci.source_id = contact.phone_number
+    end
+
+    conversation = contact_inbox.conversations.order(last_activity_at: :desc).first ||
+                   Conversation.create!(
+                     account: campaign.account,
+                     inbox: inbox,
+                     contact: contact,
+                     contact_inbox: contact_inbox
+                   )
+
+    Message.create!(
+      account: campaign.account,
+      inbox: inbox,
+      conversation: conversation,
+      message_type: :outgoing,
+      content_type: :text,
+      content: "Campanha: #{template_name}",
+      content_attributes: { template_params: template_params },
+      status: :sent,
+      private: false
+    )
+  rescue StandardError => e
+    Rails.logger.error "Failed to record campaign message for #{contact.name}: #{e.message}"
   end
 
   CONTACT_TOKENS = {
