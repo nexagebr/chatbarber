@@ -621,7 +621,7 @@ watch(funnelId, load);
                   v-model="actionSearch"
                   type="text"
                   placeholder="Buscar ação…"
-                  class="flex-1 bg-transparent text-sm text-n-slate-12 placeholder:text-n-slate-8 outline-none focus:outline-none focus-visible:outline-none border-0"
+                  class="reset-base flex-1 bg-transparent text-sm text-n-slate-12 placeholder:text-n-slate-8 outline-none border-0 mb-0"
                 />
               </div>
               <p class="text-xs text-n-slate-8 leading-relaxed">
