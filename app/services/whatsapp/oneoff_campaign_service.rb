@@ -58,7 +58,7 @@ class Whatsapp::OneoffCampaignService
       return
     end
 
-    send_whatsapp_template_message(to: contact.phone_number)
+    send_whatsapp_template_message(to: contact.phone_number, contact: contact)
   end
 
   def process_audience(audience_labels)
@@ -70,10 +70,12 @@ class Whatsapp::OneoffCampaignService
     Rails.logger.info "Campaign #{campaign.id} processing completed"
   end
 
-  def send_whatsapp_template_message(to:)
+  def send_whatsapp_template_message(to:, contact: nil)
+    personalized_params = contact ? personalize_template_params(campaign.template_params, contact) : campaign.template_params
+
     processor = Whatsapp::TemplateProcessorService.new(
       channel: channel,
-      template_params: campaign.template_params
+      template_params: personalized_params
     )
 
     name, namespace, lang_code, processed_parameters = processor.call
@@ -90,7 +92,34 @@ class Whatsapp::OneoffCampaignService
   rescue StandardError => e
     Rails.logger.error "Failed to send WhatsApp template message to #{to}: #{e.message}"
     Rails.logger.error "Backtrace: #{e.backtrace.first(5).join('\n')}"
-    # continue processing remaining contacts
     nil
+  end
+
+  CONTACT_TOKENS = {
+    '{{contact_name}}' => ->(c) { c.name.to_s },
+    '{{contact_first_name}}' => ->(c) { c.name.to_s.split(' ', 2).first.to_s },
+    '{{contact_phone}}' => ->(c) { c.phone_number.to_s },
+    '{{contact_email}}' => ->(c) { c.email.to_s }
+  }.freeze
+
+  def personalize_template_params(params, contact)
+    return params if params.blank?
+
+    token_map = CONTACT_TOKENS.transform_values { |fn| fn.call(contact) }
+
+    deep_replace(params.deep_dup, token_map)
+  end
+
+  def deep_replace(obj, token_map)
+    case obj
+    when Hash
+      obj.transform_values { |v| deep_replace(v, token_map) }
+    when Array
+      obj.map { |v| deep_replace(v, token_map) }
+    when String
+      token_map.reduce(obj) { |str, (token, value)| str.gsub(token, value) }
+    else
+      obj
+    end
   end
 end

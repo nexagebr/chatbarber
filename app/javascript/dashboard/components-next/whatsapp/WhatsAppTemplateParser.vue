@@ -162,6 +162,21 @@ const goBack = () => {
   emit('back');
 };
 
+const campaignTokens = [
+  { value: '{{contact_name}}', label: 'Nome completo do contato' },
+  { value: '{{contact_first_name}}', label: 'Primeiro nome do contato' },
+  { value: '{{contact_phone}}', label: 'Telefone do contato' },
+  { value: '{{contact_email}}', label: 'E-mail do contato' },
+];
+
+const insertToken = (token) => {
+  const keys = Object.keys(processedParams.value.body || {});
+  if (keys.length === 0) return;
+  const lastKey = keys[keys.length - 1];
+  const current = processedParams.value.body[lastKey] || '';
+  processedParams.value.body[lastKey] = current ? `${current} ${token}` : token;
+};
+
 onMounted(initializeTemplateParameters);
 
 watch(
@@ -269,6 +284,17 @@ defineExpose({
               })
             "
           />
+        </div>
+        <div class="flex flex-wrap gap-1.5 mt-1 mb-1">
+          <span class="text-xs text-n-slate-10 self-center">Variáveis dinâmicas:</span>
+          <button
+            v-for="token in campaignTokens"
+            :key="token.value"
+            type="button"
+            class="inline-flex items-center h-5 px-2 rounded text-[10px] font-mono font-semibold border border-n-weak bg-n-alpha-2 text-n-slate-11 hover:border-n-brand hover:text-n-brand transition-colors cursor-pointer"
+            :title="token.label"
+            @click="insertToken(token.value)"
+          >{{ token.value }}</button>
         </div>
       </div>
 
