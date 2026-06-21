@@ -168,7 +168,7 @@ const ACTION_TYPES = [
   { value: 'move_to_stage',          label: 'Mover para etapa',     icon: 'i-lucide-arrow-right-circle', color: 'bg-teal-500/15 text-teal-400'    },
   { value: 'move_to_funnel',         label: 'Trocar de funil',      icon: 'i-lucide-shuffle',            color: 'bg-purple-500/15 text-purple-400'},
   { value: 'add_label',              label: 'Adicionar etiqueta',   icon: 'i-lucide-tag',                color: 'bg-green-500/15 text-green-400'  },
-  { value: 'remove_label',           label: 'Remover etiqueta',     icon: 'i-lucide-tag-off',            color: 'bg-orange-500/15 text-orange-400'},
+  { value: 'remove_label',           label: 'Remover etiqueta',     icon: 'i-lucide-circle-slash-2',     color: 'bg-orange-500/15 text-orange-400'},
   { value: 'assign_agent',           label: 'Atribuir agente',      icon: 'i-lucide-user-check',         color: 'bg-pink-500/15 text-pink-400'    },
   { value: 'assign_team',            label: 'Atribuir equipe',      icon: 'i-lucide-users',              color: 'bg-cyan-500/15 text-cyan-400'    },
   { value: 'update_status',          label: 'Alterar status',       icon: 'i-lucide-circle-dot',         color: 'bg-amber-500/15 text-amber-400'  },
@@ -615,7 +615,7 @@ watch(funnelId, load);
           <template v-if="panelMode === 'automation-pick'">
             <div class="px-5 pt-4 pb-3 flex-shrink-0 flex flex-col gap-2">
               <!-- Search -->
-              <div class="flex h-9 items-center gap-2 px-3 rounded-lg border border-n-weak bg-n-solid-2 focus-within:ring-2 focus-within:ring-n-brand/30">
+              <div class="flex h-9 items-center gap-2 px-3 rounded-lg border border-n-weak bg-n-solid-2 focus-within:border-n-brand/50 transition-colors">
                 <i class="i-lucide-search text-n-slate-7 text-sm flex-shrink-0" />
                 <input
                   v-model="actionSearch"
