@@ -49,82 +49,60 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/50" @click="$emit('cancel')" />
-    <div class="relative w-full max-w-lg bg-n-solid-1 rounded-2xl shadow-2xl border border-n-weak flex flex-col max-h-[90vh]">
+  <div class="kmo-overlay" @click.self="$emit('cancel')">
+    <div class="kmo-box">
 
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-n-weak flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="i-lucide-x-circle text-ruby-9 text-lg" />
-          <h3 class="text-base font-semibold text-n-slate-12">{{ stageName }}</h3>
+      <div class="kmo-head">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="i-lucide-x-circle" style="font-size:16px;color:#ef4444;flex-shrink:0" />
+          <span class="kmo-title">{{ stageName }}</span>
         </div>
-        <button
-          class="w-8 h-8 rounded-lg flex items-center justify-center text-n-slate-9 hover:bg-n-alpha-2 transition-colors"
-          @click="$emit('cancel')"
-        >
-          <span class="i-lucide-x text-base" />
+        <button class="kmo-x" @click="$emit('cancel')">
+          <span class="i-lucide-x" style="font-size:15px" />
         </button>
       </div>
 
-      <!-- Contact info -->
-      <div class="flex items-center gap-3 px-6 py-3 border-b border-n-weak bg-n-alpha-1 flex-shrink-0">
-        <div class="w-8 h-8 rounded-full bg-n-alpha-black2 flex items-center justify-center flex-shrink-0 border border-n-weak">
-          <span class="i-lucide-user text-n-slate-7 text-sm" />
-        </div>
-        <div class="min-w-0">
-          <p class="text-sm font-medium text-n-slate-12 truncate">{{ conversation.meta?.sender?.name || 'Sem nome' }}</p>
-          <p class="text-xs text-n-slate-8 font-mono">#{{ conversation.id }}</p>
-        </div>
+      <!-- Contact strip -->
+      <div class="kmo-contact">
+        <span class="i-lucide-user" style="font-size:12px;color:rgb(var(--slate-8));flex-shrink:0" />
+        <span class="kmo-contact-name">{{ conversation.meta?.sender?.name || 'Sem nome' }}</span>
+        <span class="kmo-contact-id">#{{ conversation.id }}</span>
       </div>
 
       <!-- Form -->
-      <div class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
+      <div class="kmo-form">
 
-        <!-- Motivo de perda -->
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-n-slate-10">
-            Motivo de perda <span class="text-ruby-9">*</span>
-          </label>
+        <!-- Motivo -->
+        <div class="kmo-field">
+          <label class="kmo-lbl">Motivo de perda <span style="color:#ef4444">*</span></label>
 
-          <!-- Preset reasons -->
-          <div v-if="lossReasons.length > 0" class="flex flex-col gap-1.5">
+          <div v-if="lossReasons.length > 0" style="display:flex;flex-wrap:wrap;gap:6px">
             <button
               v-for="reason in lossReasons"
               :key="reason.id"
               type="button"
-              class="flex items-center gap-2.5 h-10 px-3 rounded-lg border text-left text-sm transition-colors"
-              :class="selectedReason === reason.name && !isCustom
-                ? 'bg-ruby-3 border-ruby-7 text-ruby-11 font-medium'
-                : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-ruby-6 hover:bg-ruby-2'"
+              class="kmo-chip"
+              :class="{ 'kmo-chip--lost': selectedReason === reason.name && !isCustom }"
               @click="selectReason(reason.name)"
             >
-              <span
-                class="text-sm flex-shrink-0"
-                :class="selectedReason === reason.name && !isCustom
-                  ? 'i-lucide-check-circle text-ruby-9'
-                  : 'i-lucide-circle text-n-slate-7'"
-              />
               {{ reason.name }}
             </button>
           </div>
 
-          <p v-else class="text-xs text-n-slate-8 flex items-center gap-1.5 py-1">
-            <span class="i-lucide-info text-xs" />
+          <p v-else class="kmo-empty">
+            <span class="i-lucide-info" style="font-size:11px" />
             Nenhum motivo cadastrado. Configure na aba "Motivos de Perda".
           </p>
 
-          <!-- Custom reason option -->
           <button
             type="button"
-            class="flex items-center gap-2.5 h-10 px-3 rounded-lg border text-left text-sm w-full transition-colors"
-            :class="isCustom
-              ? 'bg-ruby-3 border-ruby-7 text-ruby-11 font-medium'
-              : 'border-dashed border-n-weak bg-n-solid-2 text-n-slate-9 hover:border-ruby-6 hover:text-n-slate-11'"
+            class="kmo-chip kmo-chip--dashed"
+            :class="{ 'kmo-chip--lost': isCustom }"
             @click="selectCustom"
           >
-            <span class="i-lucide-pencil text-sm flex-shrink-0" />
-            Outro motivo (digitar)
+            <span class="i-lucide-pencil" style="font-size:11px" />
+            Outro (digitar)
           </button>
 
           <input
@@ -132,42 +110,124 @@ onMounted(() => {
             v-model="customReason"
             type="text"
             placeholder="Descreva o motivo…"
-            class="h-10 px-3 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-ruby-9/30 focus:border-ruby-7 transition-colors"
+            class="reset-base kmo-inp"
             autofocus
           />
         </div>
 
         <!-- Observação -->
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-n-slate-10">
-            Observação <span class="font-normal text-n-slate-8">(opcional)</span>
-          </label>
+        <div class="kmo-field">
+          <label class="kmo-lbl">Observação <span class="kmo-opt">(opcional)</span></label>
           <textarea
             v-model="outcomeNote"
-            rows="3"
-            placeholder="Ex: Cliente escolheu concorrente por preço, voltará em 6 meses…"
-            class="px-3 py-2 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-n-brand/30 resize-none"
+            rows="2"
+            placeholder="Ex: Cliente escolheu concorrente por preço…"
+            class="kmo-inp"
+            style="height:auto;padding:8px 10px;resize:none"
           />
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-n-weak flex-shrink-0">
+      <div class="kmo-foot">
+        <button type="button" class="kmo-btn-cancel" @click="$emit('cancel')">Cancelar</button>
         <button
-          class="h-9 px-4 rounded-lg border border-n-weak text-sm font-semibold text-n-slate-11 hover:bg-n-alpha-2 transition-colors"
-          @click="$emit('cancel')"
-        >
-          Cancelar
-        </button>
-        <button
-          class="h-9 px-4 rounded-lg bg-ruby-9 text-white text-sm font-semibold hover:bg-ruby-10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          type="button"
+          class="kmo-btn-del"
           :disabled="!canConfirm"
           @click="confirm"
         >
-          <span class="i-lucide-check text-sm" />
           Confirmar perda
         </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.kmo-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(8px);
+}
+.kmo-box {
+  position: relative; width: 100%; max-width: 440px; max-height: 90vh;
+  background: rgb(var(--surface-1));
+  border: 1px solid rgb(var(--border-strong));
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.kmo-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid rgb(var(--border-weak)); flex-shrink: 0;
+}
+.kmo-title { font-size: 15px; font-weight: 700; color: rgb(var(--slate-12)); }
+.kmo-x {
+  background: none; border: none; cursor: pointer;
+  color: rgb(var(--slate-8)); display: flex; transition: color .12s;
+}
+.kmo-x:hover { color: rgb(var(--slate-12)); }
+
+.kmo-contact {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 20px; border-bottom: 1px solid rgb(var(--border-weak));
+  background: rgb(var(--background-color)); flex-shrink: 0;
+}
+.kmo-contact-name { font-size: 12px; font-weight: 600; color: rgb(var(--slate-12)); }
+.kmo-contact-id { font-size: 11px; color: rgb(var(--slate-8)); font-family: monospace; margin-left: 2px; }
+
+.kmo-form {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.kmo-field { display: flex; flex-direction: column; gap: 6px; }
+.kmo-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgb(var(--slate-8)); }
+.kmo-opt { text-transform: none; font-weight: 400; letter-spacing: 0; }
+
+.kmo-inp {
+  width: 100%; height: 34px; padding: 0 10px; border-radius: 8px;
+  border: 1px solid rgb(var(--border-strong));
+  background: rgb(var(--background-color));
+  color: rgb(var(--slate-12)); font-size: 12px; font-family: inherit;
+  outline: none; transition: border-color .15s; box-sizing: border-box;
+}
+.kmo-inp:focus { border-color: #ef4444; }
+
+.kmo-chip {
+  padding: 5px 10px; border-radius: 20px; cursor: pointer;
+  font-size: 11px; font-weight: 600;
+  background: rgb(var(--background-color));
+  border: 1px solid rgb(var(--border-weak));
+  color: rgb(var(--slate-10));
+  transition: all .12s; display: inline-flex; align-items: center; gap: 4px;
+}
+.kmo-chip:hover { color: rgb(var(--slate-12)); border-color: rgb(var(--border-strong)); }
+.kmo-chip--lost { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.5); color: #ef4444; }
+.kmo-chip--dashed { border-style: dashed; }
+
+.kmo-empty {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: rgb(var(--slate-8)); font-style: italic; margin: 0;
+}
+
+.kmo-foot {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 14px 20px; border-top: 1px solid rgb(var(--border-weak)); flex-shrink: 0;
+}
+.kmo-btn-cancel {
+  height: 32px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid rgb(var(--border-strong)); background: transparent;
+  color: rgb(var(--slate-10)); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background .12s;
+}
+.kmo-btn-cancel:hover { background: rgb(var(--surface-2)); }
+.kmo-btn-del {
+  height: 32px; padding: 0 16px; border-radius: 8px;
+  background: #ef4444; color: #fff; font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer; transition: opacity .15s;
+}
+.kmo-btn-del:hover:not(:disabled) { opacity: .88; }
+.kmo-btn-del:disabled { opacity: .45; cursor: not-allowed; }
+</style>
