@@ -93,7 +93,7 @@ class Whatsapp::OneoffCampaignService
                             parameters: processed_parameters
                           }, nil)
 
-    record_campaign_message(contact, name, personalized_params, processed_parameters) if contact
+    record_campaign_message(contact, name, personalized_params) if contact
 
   rescue StandardError => e
     Rails.logger.error "Failed to send WhatsApp template message to #{to}: #{e.message}"
@@ -101,7 +101,7 @@ class Whatsapp::OneoffCampaignService
     nil
   end
 
-  def record_campaign_message(contact, template_name, template_params, processed_parameters)
+  def record_campaign_message(contact, template_name, template_params)
     contact_inbox = ContactInbox.find_or_create_by!(contact: contact, inbox: inbox) do |ci|
       ci.source_id = contact.phone_number
     end
@@ -114,7 +114,7 @@ class Whatsapp::OneoffCampaignService
                      contact_inbox: contact_inbox
                    )
 
-    rendered = render_template_body(template_name, processed_parameters) || "Campanha: #{template_name}"
+    rendered = render_template_body(template_name, template_params) || "Campanha: #{template_name}"
 
     # Use insert (no callbacks) to avoid triggering Whatsapp::SendOnWhatsappService again
     # source_id must be set so the WhatsApp frontend shows checkmark instead of clock
@@ -135,7 +135,7 @@ class Whatsapp::OneoffCampaignService
     Rails.logger.error "Failed to record campaign message for #{contact.name}: #{e.message}"
   end
 
-  def render_template_body(template_name, processed_parameters)
+  def render_template_body(template_name, template_params)
     template = channel.message_templates&.find { |t| t['name'] == template_name }
     return nil unless template
 
@@ -143,15 +143,9 @@ class Whatsapp::OneoffCampaignService
     return nil unless body
 
     text = body['text'].to_s
-
-    # processed_parameters is [{type:'body', parameters:[{type:'text',text:'val'}]}, ...]
-    body_component = processed_parameters&.find { |c| c[:type] == 'body' || c['type'] == 'body' }
-    body_params = body_component&.dig(:parameters) || body_component&.dig('parameters') || []
-
-    body_params.each_with_index do |param, idx|
-      value = param[:text] || param['text'] || ''
-      text = text.gsub("{{#{idx + 1}}}", value.to_s)
-    end
+    # body vars keyed by variable name or position: {'nome'=>'João'} or {'1'=>'João'}
+    body_vars = template_params.dig('processed_params', 'body') || {}
+    body_vars.each { |key, value| text = text.gsub("{{#{key}}}", value.to_s) }
     text
   rescue StandardError
     nil
