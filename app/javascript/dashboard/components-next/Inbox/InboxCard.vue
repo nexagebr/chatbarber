@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onBeforeMount } from 'vue';
+import { computed, ref, onBeforeMount, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getInboxIconByType } from 'dashboard/helper/inbox';
 import { dynamicTime, shortTimestamp } from 'shared/helpers/timeHelper';
@@ -149,6 +149,30 @@ const contextMenuActions = {
 };
 
 onBeforeMount(contextMenuActions.close);
+
+// ── WhatsApp 24h window ───────────────────────────────────────────────────────
+const nowTs = ref(Date.now());
+const windowTicker = setInterval(() => { nowTs.value = Date.now(); }, 60000);
+onUnmounted(() => clearInterval(windowTicker));
+
+const windowInfo = computed(() => {
+  if (inbox.value?.channelType !== 'Channel::Whatsapp') return null;
+
+  const lastTs = (props.inboxItem?.lastActivityAt || 0) * 1000;
+  const expiry = lastTs + 24 * 60 * 60 * 1000;
+  const remaining = expiry - nowTs.value;
+
+  if (remaining <= 0) {
+    return { label: 'Janela fechada', color: 'closed' };
+  }
+  const hours = Math.floor(remaining / 3600000);
+  const mins = Math.floor((remaining % 3600000) / 60000);
+  const timeLabel = hours > 0 ? `${hours}h restantes` : `${mins}min restantes`;
+
+  if (remaining < 2 * 3600000) return { label: timeLabel, color: 'urgent' };
+  if (remaining < 6 * 3600000) return { label: timeLabel, color: 'warning' };
+  return { label: timeLabel, color: 'open' };
+});
 </script>
 
 <template>
@@ -238,6 +262,14 @@ onBeforeMount(contextMenuActions.close);
         </span>
       </div>
     </div>
+    <div
+      v-if="windowInfo"
+      class="wa-badge"
+      :class="`wa-badge--${windowInfo.color}`"
+    >
+      <span class="wa-dot" :class="`wa-dot--${windowInfo.color}`" />
+      {{ windowInfo.label }}
+    </div>
     <InboxContextMenu
       v-if="isContextMenuOpen"
       :context-menu-position="contextMenuPosition"
@@ -247,3 +279,25 @@ onBeforeMount(contextMenuActions.close);
     />
   </div>
 </template>
+
+<style scoped>
+.wa-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; width: fit-content; letter-spacing: .01em;
+}
+.wa-badge--open    { background: rgba(34,197,94,.12);  color: #16a34a; }
+.wa-badge--warning { background: rgba(234,179,8,.14);  color: #a16207; }
+.wa-badge--urgent  { background: rgba(239,68,68,.13);  color: #dc2626; }
+.wa-badge--closed  { background: rgba(148,163,184,.1); color: #64748b; }
+.wa-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+}
+.wa-dot--open    { background: #16a34a; }
+.wa-dot--warning { background: #ca8a04; animation: wa-pulse 1.5s infinite; }
+.wa-dot--urgent  { background: #dc2626; animation: wa-pulse 1s infinite; }
+.wa-dot--closed  { background: #94a3b8; }
+@keyframes wa-pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: .35; }
+}
+</style>
