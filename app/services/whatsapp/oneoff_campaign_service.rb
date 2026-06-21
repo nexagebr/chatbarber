@@ -116,17 +116,19 @@ class Whatsapp::OneoffCampaignService
 
     rendered = render_template_body(template_name, processed_parameters) || "Campanha: #{template_name}"
 
-    Message.create!(
-      account: campaign.account,
-      inbox: inbox,
-      conversation: conversation,
-      message_type: :outgoing,
-      content_type: :text,
+    # Use insert (no callbacks) to avoid triggering Whatsapp::SendOnWhatsappService again
+    Message.insert({
+      account_id: campaign.account_id,
+      inbox_id: inbox.id,
+      conversation_id: conversation.id,
+      message_type: Message.message_types[:outgoing],
+      content_type: Message.content_types[:text],
       content: rendered,
-      content_attributes: { template_params: template_params },
-      status: :sent,
-      private: false
-    )
+      status: Message.statuses[:sent],
+      private: false,
+      created_at: Time.current,
+      updated_at: Time.current
+    })
   rescue StandardError => e
     Rails.logger.error "Failed to record campaign message for #{contact.name}: #{e.message}"
   end
