@@ -49,14 +49,12 @@ class Whatsapp::SendOnWhatsappService < Base::SendOnChannelService
   def personalize_for_contact(params)
     return params if params.blank?
 
-    contact = message.conversation.contact
-    return params unless contact
-
+    contact = message.conversation&.contact
     token_map = {
-      '{{contact_name}}' => contact.name.to_s,
-      '{{contact_first_name}}' => contact.name.to_s.split(' ', 2).first.to_s,
-      '{{contact_phone}}' => contact.phone_number.to_s,
-      '{{contact_email}}' => contact.email.to_s
+      '{{contact_name}}' => contact&.name.presence || 'cliente',
+      '{{contact_first_name}}' => contact&.name.to_s.split(' ', 2).first.presence || 'cliente',
+      '{{contact_phone}}' => contact&.phone_number.to_s,
+      '{{contact_email}}' => contact&.email.to_s
     }
     deep_replace(params.deep_dup, token_map)
   end
