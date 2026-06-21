@@ -2,6 +2,8 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
+const isProduction = !['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 const store = useStore();
 
 const now = new Date();
@@ -200,6 +202,15 @@ const filteredTx = computed(() => allItems.value.filter(t => {
 
 <template>
   <div class="fi-root">
+
+    <!-- Bloqueio em produção -->
+    <div v-if="isProduction" class="wip-overlay">
+      <div class="wip-box">
+        <span class="wip-icon i-lucide-hammer" />
+        <h2 class="wip-title">Em construção</h2>
+        <p class="wip-desc">O módulo de Caixa ainda está sendo desenvolvido.<br>Em breve estará disponível.</p>
+      </div>
+    </div>
 
     <!-- ── TOPBAR ── -->
     <div class="fi-bar">
@@ -607,6 +618,7 @@ const filteredTx = computed(() => allItems.value.filter(t => {
 
 <style scoped>
 .fi-root {
+  position: relative;
   display: flex; flex-direction: column;
   width: 100%; height: 100%; min-height: 0; overflow-y: auto;
   background: rgb(var(--background-color));
@@ -778,4 +790,10 @@ const filteredTx = computed(() => allItems.value.filter(t => {
 .fi-btn-pri:hover:not(:disabled) { opacity:.82; }
 .fi-btn-pri:disabled { opacity:.4; cursor:not-allowed; }
 .fi-del-ico  { width:40px; height:40px; border-radius:10px; background:rgb(var(--surface-2)); border:1px solid rgb(var(--border-weak)); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+
+.wip-overlay { position:absolute; inset:0; z-index:999; display:flex; align-items:center; justify-content:center; background:rgb(var(--surface-1)); backdrop-filter:blur(6px); }
+.wip-box     { display:flex; flex-direction:column; align-items:center; gap:12px; padding:40px 32px; border-radius:16px; border:1px solid rgb(var(--border-weak)); background:rgb(var(--surface-2)); box-shadow:0 16px 48px rgba(0,0,0,.18); max-width:320px; text-align:center; }
+.wip-icon    { font-size:36px; color:rgb(var(--slate-8)); }
+.wip-title   { font-size:18px; font-weight:700; color:rgb(var(--slate-12)); margin:0; }
+.wip-desc    { font-size:13px; color:rgb(var(--slate-9)); line-height:1.55; margin:0; }
 </style>
