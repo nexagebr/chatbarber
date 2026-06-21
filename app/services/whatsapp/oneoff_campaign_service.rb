@@ -93,7 +93,7 @@ class Whatsapp::OneoffCampaignService
                             parameters: processed_parameters
                           }, nil)
 
-    record_campaign_message(contact, name, personalized_params) if contact
+    record_campaign_message(contact, name, personalized_params, processed_parameters) if contact
 
   rescue StandardError => e
     Rails.logger.error "Failed to send WhatsApp template message to #{to}: #{e.message}"
@@ -101,7 +101,7 @@ class Whatsapp::OneoffCampaignService
     nil
   end
 
-  def record_campaign_message(contact, template_name, template_params)
+  def record_campaign_message(contact, template_name, template_params, processed_parameters)
     contact_inbox = ContactInbox.find_or_create_by!(contact: contact, inbox: inbox) do |ci|
       ci.source_id = contact.phone_number
     end
@@ -114,19 +114,37 @@ class Whatsapp::OneoffCampaignService
                      contact_inbox: contact_inbox
                    )
 
+    rendered = render_template_body(template_name, processed_parameters) || "Campanha: #{template_name}"
+
     Message.create!(
       account: campaign.account,
       inbox: inbox,
       conversation: conversation,
       message_type: :outgoing,
       content_type: :text,
-      content: "Campanha: #{template_name}",
+      content: rendered,
       content_attributes: { template_params: template_params },
       status: :sent,
       private: false
     )
   rescue StandardError => e
     Rails.logger.error "Failed to record campaign message for #{contact.name}: #{e.message}"
+  end
+
+  def render_template_body(template_name, processed_parameters)
+    template = channel.message_templates&.find { |t| t['name'] == template_name }
+    return nil unless template
+
+    body = template['components']&.find { |c| c['type'] == 'BODY' }
+    return nil unless body
+
+    text = body['text'].to_s
+    processed_parameters.each_with_index do |param, idx|
+      text = text.gsub("{{#{idx + 1}}}", param[:text].to_s)
+    end
+    text
+  rescue StandardError
+    nil
   end
 
   CONTACT_TOKENS = {
