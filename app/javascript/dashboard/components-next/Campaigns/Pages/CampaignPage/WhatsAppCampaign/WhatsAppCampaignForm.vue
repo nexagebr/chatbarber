@@ -218,7 +218,6 @@ watch(
       v-if="selectedTemplate"
       ref="templateParserRef"
       :template="selectedTemplate"
-      :campaign-mode="true"
     />
 
     <div class="flex flex-col gap-1">
