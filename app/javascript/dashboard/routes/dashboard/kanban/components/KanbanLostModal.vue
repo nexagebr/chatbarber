@@ -1,10 +1,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import Button from 'dashboard/components-next/button/Button.vue';
-import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 
-const props = defineProps({
+defineProps({
   conversation: { type: Object, required: true },
   stageName: { type: String, default: 'Perdido' },
 });
@@ -51,45 +49,42 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="$emit('cancel')">
-    <div class="w-full max-w-md bg-n-surface-1 rounded-2xl shadow-2xl overflow-hidden">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50" @click="$emit('cancel')" />
+    <div class="relative w-full max-w-lg bg-n-solid-1 rounded-2xl shadow-2xl border border-n-weak flex flex-col max-h-[90vh]">
 
-      <!-- Header vermelho -->
-      <div class="flex items-center gap-3 px-6 py-5 bg-gradient-to-r from-n-ruby-9/15 to-n-ruby-9/5 border-b border-n-ruby-9/20">
-        <div class="w-11 h-11 rounded-xl bg-n-ruby-9/15 flex items-center justify-center flex-shrink-0">
-          <i class="i-lucide-x-circle text-2xl text-n-ruby-9" />
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-n-weak flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="i-lucide-x-circle text-ruby-9 text-lg" />
+          <h3 class="text-base font-semibold text-n-slate-12">{{ stageName }}</h3>
         </div>
-        <div>
-          <h2 class="text-base font-bold text-n-slate-12">{{ stageName }}</h2>
-          <p class="text-xs text-n-slate-10 mt-0.5">Qual foi o motivo da perda?</p>
-        </div>
-        <button class="ml-auto text-n-slate-9 hover:text-n-slate-12 transition-colors" @click="$emit('cancel')">
-          <i class="i-lucide-x text-base" />
+        <button
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-n-slate-9 hover:bg-n-alpha-2 transition-colors"
+          @click="$emit('cancel')"
+        >
+          <span class="i-lucide-x text-base" />
         </button>
       </div>
 
-      <!-- Contact -->
-      <div class="flex items-center gap-3 px-6 py-4 border-b border-n-weak bg-n-alpha-1">
-        <Avatar
-          :src="conversation.meta?.sender?.thumbnail"
-          :username="conversation.meta?.sender?.name"
-          :size="36"
-        />
-        <div>
-          <p class="text-sm font-semibold text-n-slate-12">{{ conversation.meta?.sender?.name || 'Sem nome' }}</p>
-          <p class="text-xs text-n-slate-9">#{{ conversation.id }}</p>
+      <!-- Contact info -->
+      <div class="flex items-center gap-3 px-6 py-3 border-b border-n-weak bg-n-alpha-1 flex-shrink-0">
+        <div class="w-8 h-8 rounded-full bg-n-alpha-black2 flex items-center justify-center flex-shrink-0 border border-n-weak">
+          <span class="i-lucide-user text-n-slate-7 text-sm" />
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-n-slate-12 truncate">{{ conversation.meta?.sender?.name || 'Sem nome' }}</p>
+          <p class="text-xs text-n-slate-8 font-mono">#{{ conversation.id }}</p>
         </div>
       </div>
 
       <!-- Form -->
-      <div class="px-6 py-5 space-y-4">
+      <div class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
 
         <!-- Motivo de perda -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-1.5 text-xs font-bold text-n-slate-11 uppercase tracking-wide">
-            <i class="i-lucide-flag text-n-ruby-9" />
-            Motivo de perda
-            <span class="text-[10px] font-normal normal-case text-n-ruby-9 bg-n-ruby-9/10 px-1.5 py-0.5 rounded">obrigatório</span>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-n-slate-10">
+            Motivo de perda <span class="text-ruby-9">*</span>
           </label>
 
           <!-- Preset reasons -->
@@ -97,34 +92,38 @@ onMounted(() => {
             <button
               v-for="reason in lossReasons"
               :key="reason.id"
-              class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left text-sm transition-all"
+              type="button"
+              class="flex items-center gap-2.5 h-10 px-3 rounded-lg border text-left text-sm transition-colors"
               :class="selectedReason === reason.name && !isCustom
-                ? 'bg-n-ruby-9/10 border-n-ruby-9 text-n-ruby-9 font-semibold'
-                : 'border-n-weak text-n-slate-11 hover:border-n-ruby-9/40 hover:bg-n-ruby-9/5'"
+                ? 'bg-ruby-3 border-ruby-7 text-ruby-11 font-medium'
+                : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-ruby-6 hover:bg-ruby-2'"
               @click="selectReason(reason.name)"
             >
-              <i
+              <span
                 class="text-sm flex-shrink-0"
-                :class="selectedReason === reason.name && !isCustom ? 'i-lucide-check-circle text-n-ruby-9' : 'i-lucide-circle text-n-slate-8'"
+                :class="selectedReason === reason.name && !isCustom
+                  ? 'i-lucide-check-circle text-ruby-9'
+                  : 'i-lucide-circle text-n-slate-7'"
               />
               {{ reason.name }}
             </button>
           </div>
 
-          <div v-else class="text-xs text-n-slate-9 italic flex items-center gap-1.5 py-1">
-            <i class="i-lucide-info" />
+          <p v-else class="text-xs text-n-slate-8 flex items-center gap-1.5 py-1">
+            <span class="i-lucide-info text-xs" />
             Nenhum motivo cadastrado. Configure na aba "Motivos de Perda".
-          </div>
+          </p>
 
           <!-- Custom reason option -->
           <button
-            class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left text-sm w-full transition-all"
+            type="button"
+            class="flex items-center gap-2.5 h-10 px-3 rounded-lg border text-left text-sm w-full transition-colors"
             :class="isCustom
-              ? 'bg-n-ruby-9/10 border-n-ruby-9 text-n-ruby-9 font-semibold'
-              : 'border-dashed border-n-weak text-n-slate-9 hover:border-n-ruby-9/40 hover:text-n-slate-11'"
+              ? 'bg-ruby-3 border-ruby-7 text-ruby-11 font-medium'
+              : 'border-dashed border-n-weak bg-n-solid-2 text-n-slate-9 hover:border-ruby-6 hover:text-n-slate-11'"
             @click="selectCustom"
           >
-            <i class="i-lucide-pencil text-sm flex-shrink-0" />
+            <span class="i-lucide-pencil text-sm flex-shrink-0" />
             Outro motivo (digitar)
           </button>
 
@@ -133,34 +132,39 @@ onMounted(() => {
             v-model="customReason"
             type="text"
             placeholder="Descreva o motivo…"
-            class="w-full text-sm border-2 border-n-ruby-9/30 rounded-xl px-3 py-2.5 bg-n-surface-1 text-n-slate-12 focus:outline-none focus:border-n-ruby-9 transition-colors"
+            class="h-10 px-3 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-ruby-9/30 focus:border-ruby-7 transition-colors"
             autofocus
           />
         </div>
 
         <!-- Observação -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-n-slate-11 uppercase tracking-wide">
-            Observação <span class="normal-case text-n-slate-9 font-normal">(opcional)</span>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-n-slate-10">
+            Observação <span class="font-normal text-n-slate-8">(opcional)</span>
           </label>
           <textarea
             v-model="outcomeNote"
-            rows="2"
+            rows="3"
             placeholder="Ex: Cliente escolheu concorrente por preço, voltará em 6 meses…"
-            class="w-full text-sm border border-n-weak rounded-xl px-3 py-2.5 bg-n-surface-1 text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-ruby-9/20 focus:border-n-ruby-9/50 resize-none transition-colors"
+            class="px-3 py-2 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-n-brand/30 resize-none"
           />
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-n-weak bg-n-alpha-1">
-        <Button variant="secondary" size="sm" @click="$emit('cancel')">Cancelar</Button>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-n-weak flex-shrink-0">
         <button
-          class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-n-ruby-9 hover:bg-n-ruby-11 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          class="h-9 px-4 rounded-lg border border-n-weak text-sm font-semibold text-n-slate-11 hover:bg-n-alpha-2 transition-colors"
+          @click="$emit('cancel')"
+        >
+          Cancelar
+        </button>
+        <button
+          class="h-9 px-4 rounded-lg bg-ruby-9 text-white text-sm font-semibold hover:bg-ruby-10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           :disabled="!canConfirm"
           @click="confirm"
         >
-          <i class="i-lucide-check text-sm" />
+          <span class="i-lucide-check text-sm" />
           Confirmar perda
         </button>
       </div>
