@@ -165,13 +165,13 @@ async function saveEdit() {
   <div class="px-4 pb-4 pt-1">
 
     <!-- ── Empty state ───────────────────────────────────────────────────────── -->
-    <div v-if="!hasData && !editing" class="flex flex-col items-start gap-2.5">
-      <div class="flex items-center gap-2 text-n-slate-7">
-        <span class="i-lucide-map-pin-off text-sm" />
-        <span class="text-xs">Origem não identificada</span>
+    <div v-if="!hasData && !editing" class="flex flex-col items-center gap-3 py-3">
+      <div class="flex flex-col items-center gap-1 text-n-slate-7">
+        <span class="i-lucide-map-pin-off text-base" />
+        <span class="text-xs text-center">Origem não identificada</span>
       </div>
       <button
-        class="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg border border-n-weak text-xs font-medium text-n-slate-10 hover:bg-n-alpha-2 transition-colors"
+        class="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg border border-n-weak text-xs font-medium text-n-slate-10 hover:bg-n-alpha-2 hover:border-n-brand/40 hover:text-n-slate-12 transition-colors"
         @click="startEdit"
       >
         <span class="i-lucide-plus text-xs" />
