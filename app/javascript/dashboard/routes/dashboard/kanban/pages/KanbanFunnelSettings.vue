@@ -578,107 +578,250 @@ watch(funnelId, load);
       </div>
 
       <transition name="slide-right">
-        <div v-if="panelOpen" class="w-[340px] flex-shrink-0 border-l border-n-weak bg-n-surface-1 flex flex-col overflow-hidden">
-          <div class="flex items-center justify-between px-4 py-3 border-b border-n-weak flex-shrink-0">
-            <div class="flex items-center gap-2 min-w-0">
-              <div v-if="panelMode === 'automation-pick'" class="w-7 h-7 rounded-lg bg-n-brand/10 flex items-center justify-center flex-shrink-0"><i class="i-lucide-zap text-n-brand text-sm" /></div>
-              <div v-else class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-sm" :class="actionMeta(selectedActionType).color"><i :class="actionMeta(selectedActionType).icon" /></div>
+        <div v-if="panelOpen" class="w-[360px] flex-shrink-0 border-l border-n-weak bg-n-solid-1 flex flex-col overflow-hidden">
+
+          <!-- Panel header -->
+          <div class="flex items-center justify-between px-5 py-4 border-b border-n-weak flex-shrink-0">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                v-if="panelMode === 'automation-pick'"
+                class="w-8 h-8 rounded-lg bg-n-brand/10 flex items-center justify-center flex-shrink-0"
+              >
+                <i class="i-lucide-zap text-n-brand text-base" />
+              </div>
+              <div
+                v-else
+                class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base"
+                :class="actionMeta(selectedActionType).color"
+              >
+                <i :class="actionMeta(selectedActionType).icon" />
+              </div>
               <div class="min-w-0">
-                <p class="text-sm font-semibold text-n-slate-12 leading-tight">{{ panelMode === 'automation-pick' ? 'Escolher gatilho' : actionMeta(selectedActionType).label }}</p>
-                <p class="text-[10px] text-n-slate-9 truncate">{{ pickerStageName }}</p>
+                <p class="text-sm font-semibold text-n-slate-12 leading-snug">
+                  {{ panelMode === 'automation-pick' ? 'Adicionar gatilho' : (editingAutomationId ? 'Editar gatilho' : actionMeta(selectedActionType).label) }}
+                </p>
+                <p class="text-xs text-n-slate-8 truncate mt-px">{{ pickerStageName }}</p>
               </div>
             </div>
-            <button class="w-7 h-7 flex items-center justify-center rounded-lg text-n-slate-9 hover:text-n-slate-12 hover:bg-n-alpha-2 transition-colors flex-shrink-0" @click="closePicker"><i class="i-lucide-x text-sm" /></button>
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-n-slate-9 hover:bg-n-alpha-2 transition-colors flex-shrink-0"
+              @click="closePicker"
+            >
+              <i class="i-lucide-x text-base" />
+            </button>
           </div>
 
+          <!-- ── PICKER ── -->
           <template v-if="panelMode === 'automation-pick'">
-            <div class="px-3 pt-3 pb-2 flex-shrink-0">
-              <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-n-alpha-2 border border-n-weak">
-                <i class="i-lucide-search text-n-slate-8 text-xs flex-shrink-0" />
-                <input v-model="actionSearch" type="text" placeholder="Buscar ação…" class="flex-1 bg-transparent text-xs text-n-slate-12 placeholder-n-slate-8 outline-none" />
+            <div class="px-5 pt-4 pb-3 flex-shrink-0 flex flex-col gap-2">
+              <!-- Search -->
+              <div class="flex h-9 items-center gap-2 px-3 rounded-lg border border-n-weak bg-n-solid-2 focus-within:ring-2 focus-within:ring-n-brand/30">
+                <i class="i-lucide-search text-n-slate-7 text-sm flex-shrink-0" />
+                <input
+                  v-model="actionSearch"
+                  type="text"
+                  placeholder="Buscar ação…"
+                  class="flex-1 bg-transparent text-sm text-n-slate-12 placeholder:text-n-slate-8 outline-none"
+                />
               </div>
+              <p class="text-xs text-n-slate-8 leading-relaxed">
+                Executa quando um lead entra em
+                <span class="font-semibold text-n-slate-11">{{ pickerStageName }}</span>
+              </p>
             </div>
-            <p class="px-3 pb-2 text-[11px] text-n-slate-9 flex-shrink-0">Executa automaticamente quando um lead entra em <strong class="text-n-slate-11">{{ pickerStageName }}</strong></p>
-            <div class="flex-1 overflow-y-auto px-3 pb-3">
+
+            <div class="flex-1 overflow-y-auto px-5 pb-5">
               <div class="grid grid-cols-2 gap-2">
-                <button v-for="action in filteredActions" :key="action.value" class="group flex flex-col items-center gap-3 p-4 rounded-xl border border-n-weak bg-n-surface-2 hover:border-n-brand/50 hover:bg-n-brand/[0.04] transition-all text-center" @click="selectActionType(action.value)">
-                  <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110" :class="action.color"><i :class="action.icon" /></div>
-                  <span class="text-[11px] font-semibold text-n-slate-11 group-hover:text-n-slate-12 leading-tight">{{ action.label }}</span>
+                <button
+                  v-for="action in filteredActions"
+                  :key="action.value"
+                  class="group flex flex-col items-center gap-2.5 p-4 rounded-xl border border-n-weak bg-n-solid-2 hover:border-n-brand/40 hover:bg-n-brand/[0.03] transition-all text-center"
+                  @click="selectActionType(action.value)"
+                >
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-transform group-hover:scale-105"
+                    :class="action.color"
+                  >
+                    <i :class="action.icon" />
+                  </div>
+                  <span class="text-xs font-semibold text-n-slate-11 group-hover:text-n-slate-12 leading-tight">{{ action.label }}</span>
                 </button>
               </div>
             </div>
           </template>
 
+          <!-- ── FORM ── -->
           <template v-else-if="panelMode === 'automation-form'">
-            <div class="flex-1 overflow-y-auto p-4 space-y-4">
-              <button v-if="!editingAutomationId" class="flex items-center gap-1.5 text-xs text-n-slate-9 hover:text-n-brand transition-colors" @click="panelMode = 'automation-pick'; selectedActionType = null;">
-                <i class="i-lucide-arrow-left text-xs" />Escolher outra ação
+            <div class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+
+              <!-- Back link -->
+              <button
+                v-if="!editingAutomationId"
+                class="flex items-center gap-1.5 text-xs text-n-slate-8 hover:text-n-brand transition-colors w-fit"
+                @click="panelMode = 'automation-pick'; selectedActionType = null"
+              >
+                <i class="i-lucide-arrow-left text-xs" />
+                Escolher outra ação
               </button>
-              <div v-if="['send_message','add_note'].includes(form.action_type)" class="space-y-2">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">{{ form.action_type === 'add_note' ? 'Conteúdo da nota' : 'Mensagem' }}</label>
-                <textarea v-model="form.action_params.content" rows="5" class="w-full text-sm border border-n-weak rounded-xl px-3 py-2.5 bg-n-surface-2 text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand resize-none" :placeholder="form.action_type === 'add_note' ? 'Nota interna…' : 'Escreva a mensagem…'" />
+
+              <!-- send_message / add_note -->
+              <div v-if="['send_message','add_note'].includes(form.action_type)" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">
+                  {{ form.action_type === 'add_note' ? 'Conteúdo da nota' : 'Mensagem' }}
+                </label>
+                <textarea
+                  v-model="form.action_params.content"
+                  rows="5"
+                  class="px-3 py-2 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-n-brand/30 resize-none"
+                  :placeholder="form.action_type === 'add_note' ? 'Nota interna…' : 'Escreva a mensagem…'"
+                />
                 <label v-if="form.action_type === 'send_message'" class="flex items-center gap-2 cursor-pointer">
                   <input v-model="form.action_params.is_private" type="checkbox" class="accent-n-brand rounded" />
                   <span class="text-xs text-n-slate-11">Enviar como nota privada</span>
                 </label>
               </div>
-              <div v-else-if="form.action_type === 'send_scheduled_message'" class="space-y-3">
-                <textarea v-model="form.action_params.content" rows="4" class="w-full text-sm border border-n-weak rounded-xl px-3 py-2.5 bg-n-surface-2 text-n-slate-12 focus:outline-none resize-none" placeholder="Mensagem agendada…" />
-                <div>
-                  <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block mb-1.5">Enviar após</label>
+
+              <!-- send_scheduled_message -->
+              <template v-else-if="form.action_type === 'send_scheduled_message'">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-n-slate-10">Mensagem</label>
+                  <textarea
+                    v-model="form.action_params.content"
+                    rows="4"
+                    class="px-3 py-2 rounded-lg border border-n-weak bg-n-solid-2 text-sm text-n-slate-12 placeholder:text-n-slate-8 focus:outline-none focus:ring-2 focus:ring-n-brand/30 resize-none"
+                    placeholder="Mensagem agendada…"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-n-slate-10">Enviar após</label>
                   <div class="flex flex-wrap gap-1.5">
-                    <button v-for="p in DELAY_PRESETS.slice(1)" :key="p.value" class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all" :class="form.action_params.delay_minutes === p.value ? 'bg-n-brand text-white border-n-brand' : 'border-n-weak text-n-slate-11 hover:border-n-brand/40'" @click="form.action_params.delay_minutes = p.value">{{ p.label }}</button>
+                    <button
+                      v-for="p in DELAY_PRESETS.slice(1)"
+                      :key="p.value"
+                      class="h-8 px-3 rounded-lg text-xs font-medium border transition-all"
+                      :class="form.action_params.delay_minutes === p.value
+                        ? 'bg-n-brand text-white border-n-brand'
+                        : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-n-brand/40'"
+                      @click="form.action_params.delay_minutes = p.value"
+                    >{{ p.label }}</button>
                   </div>
                 </div>
-              </div>
-              <div v-else-if="['add_label','remove_label'].includes(form.action_type)" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Etiqueta</label>
-                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-xl border border-n-weak p-1">
-                  <button v-for="lbl in labels" :key="lbl.id" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border text-left transition-all" :class="form.action_params.label === lbl.title ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'" @click="form.action_params.label = lbl.title">
-                    <span class="w-3 h-3 rounded-full flex-shrink-0" :style="{ background: lbl.color || '#64748b' }" /><span class="text-xs text-n-slate-12 flex-1">{{ lbl.title }}</span><i v-if="form.action_params.label === lbl.title" class="i-lucide-check text-n-brand text-xs" />
+              </template>
+
+              <!-- add_label / remove_label -->
+              <div v-else-if="['add_label','remove_label'].includes(form.action_type)" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Etiqueta</label>
+                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-lg border border-n-weak bg-n-solid-2 p-1">
+                  <button
+                    v-for="lbl in labels"
+                    :key="lbl.id"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border text-left transition-all"
+                    :class="form.action_params.label === lbl.title
+                      ? 'bg-n-brand/10 border-n-brand'
+                      : 'border-transparent hover:bg-n-alpha-1'"
+                    @click="form.action_params.label = lbl.title"
+                  >
+                    <span class="w-3 h-3 rounded-full flex-shrink-0" :style="{ background: lbl.color || '#64748b' }" />
+                    <span class="text-xs text-n-slate-12 flex-1">{{ lbl.title }}</span>
+                    <i v-if="form.action_params.label === lbl.title" class="i-lucide-check text-n-brand text-xs" />
                   </button>
                   <p v-if="!labels.length" class="text-center text-xs text-n-slate-9 py-3">Nenhuma etiqueta</p>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'assign_agent'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Agente</label>
-                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-xl border border-n-weak p-1">
-                  <button v-for="agent in agents" :key="agent.id" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all" :class="String(form.action_params.agent_id) === String(agent.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'" @click="form.action_params.agent_id = agent.id">
+
+              <!-- assign_agent -->
+              <div v-else-if="form.action_type === 'assign_agent'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Agente</label>
+                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-lg border border-n-weak bg-n-solid-2 p-1">
+                  <button
+                    v-for="agent in agents"
+                    :key="agent.id"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all"
+                    :class="String(form.action_params.agent_id) === String(agent.id)
+                      ? 'bg-n-brand/10 border-n-brand'
+                      : 'border-transparent hover:bg-n-alpha-1'"
+                    @click="form.action_params.agent_id = agent.id"
+                  >
                     <Avatar :src="agent.thumbnail" :username="agent.name" :size="26" />
-                    <div class="min-w-0 flex-1"><p class="text-xs font-medium text-n-slate-12 truncate">{{ agent.name }}</p><p class="text-[10px] text-n-slate-9 truncate">{{ agent.email }}</p></div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-medium text-n-slate-12 truncate">{{ agent.name }}</p>
+                      <p class="text-[10px] text-n-slate-9 truncate">{{ agent.email }}</p>
+                    </div>
                     <i v-if="String(form.action_params.agent_id) === String(agent.id)" class="i-lucide-check text-n-brand text-xs" />
                   </button>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'assign_team'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Equipe</label>
-                <div class="flex flex-col gap-1 rounded-xl border border-n-weak p-1">
-                  <button v-for="team in teams" :key="team.id" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all" :class="String(form.action_params.team_id) === String(team.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'" @click="form.action_params.team_id = team.id">
-                    <div class="w-7 h-7 rounded-full bg-n-brand/10 flex items-center justify-center flex-shrink-0"><i class="i-lucide-users text-n-brand text-xs" /></div>
+
+              <!-- assign_team -->
+              <div v-else-if="form.action_type === 'assign_team'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Equipe</label>
+                <div class="flex flex-col gap-1 rounded-lg border border-n-weak bg-n-solid-2 p-1">
+                  <button
+                    v-for="team in teams"
+                    :key="team.id"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all"
+                    :class="String(form.action_params.team_id) === String(team.id)
+                      ? 'bg-n-brand/10 border-n-brand'
+                      : 'border-transparent hover:bg-n-alpha-1'"
+                    @click="form.action_params.team_id = team.id"
+                  >
+                    <div class="w-7 h-7 rounded-full bg-n-brand/10 flex items-center justify-center flex-shrink-0">
+                      <i class="i-lucide-users text-n-brand text-xs" />
+                    </div>
                     <span class="text-xs text-n-slate-12 flex-1 truncate">{{ team.name }}</span>
                     <i v-if="String(form.action_params.team_id) === String(team.id)" class="i-lucide-check text-n-brand text-xs" />
                   </button>
                   <p v-if="!teams.length" class="text-center text-xs text-n-slate-9 py-3">Nenhuma equipe</p>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'update_status'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Novo status</label>
+
+              <!-- update_status -->
+              <div v-else-if="form.action_type === 'update_status'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Novo status</label>
                 <div class="grid grid-cols-2 gap-1.5">
-                  <button v-for="opt in STATUS_OPTIONS" :key="opt.value" class="py-2.5 rounded-xl text-xs font-semibold border transition-all" :class="form.action_params.status === opt.value ? 'bg-n-brand text-white border-n-brand' : 'border-n-weak text-n-slate-11 hover:border-n-brand/40 hover:bg-n-brand/5'" @click="form.action_params.status = opt.value">{{ opt.label }}</button>
+                  <button
+                    v-for="opt in STATUS_OPTIONS"
+                    :key="opt.value"
+                    class="h-10 rounded-lg text-xs font-semibold border transition-all"
+                    :class="form.action_params.status === opt.value
+                      ? 'bg-n-brand text-white border-n-brand'
+                      : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-n-brand/40 hover:bg-n-brand/5'"
+                    @click="form.action_params.status = opt.value"
+                  >{{ opt.label }}</button>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'update_priority'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Prioridade</label>
+
+              <!-- update_priority -->
+              <div v-else-if="form.action_type === 'update_priority'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Prioridade</label>
                 <div class="flex flex-col gap-1.5">
-                  <button v-for="opt in PRIORITY_OPTIONS" :key="opt.value" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm border font-medium transition-all" :class="form.action_params.priority === opt.value ? 'bg-n-brand/10 border-n-brand text-n-brand' : 'border-n-weak text-n-slate-11 hover:border-n-brand/40'" @click="form.action_params.priority = opt.value">
-                    <i class="i-lucide-flag text-xs" />{{ opt.label }}<i v-if="form.action_params.priority === opt.value" class="i-lucide-check text-n-brand text-xs ml-auto" />
+                  <button
+                    v-for="opt in PRIORITY_OPTIONS"
+                    :key="opt.value"
+                    class="flex items-center gap-2.5 h-10 px-3 rounded-lg border text-sm font-medium transition-all"
+                    :class="form.action_params.priority === opt.value
+                      ? 'bg-n-brand/10 border-n-brand text-n-brand'
+                      : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-n-brand/40'"
+                    @click="form.action_params.priority = opt.value"
+                  >
+                    <i class="i-lucide-flag text-xs" />
+                    {{ opt.label }}
+                    <i v-if="form.action_params.priority === opt.value" class="i-lucide-check text-n-brand text-xs ml-auto" />
                   </button>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'move_to_stage'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Mover para a etapa</label>
-                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-xl border border-n-weak p-1">
-                  <button v-for="s in storeStages.filter(s => s.id !== pickerStageId && (s.stage_type === 'regular' || !s.stage_type || s.stage_type === 'won' || s.stage_type === 'lost'))" :key="s.id" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all" :class="String(form.action_params.stage_id) === String(s.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'" @click="form.action_params.stage_id = s.id">
+
+              <!-- move_to_stage -->
+              <div v-else-if="form.action_type === 'move_to_stage'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Mover para a etapa</label>
+                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-lg border border-n-weak bg-n-solid-2 p-1">
+                  <button
+                    v-for="s in storeStages.filter(s => s.id !== pickerStageId && (s.stage_type === 'regular' || !s.stage_type || s.stage_type === 'won' || s.stage_type === 'lost'))"
+                    :key="s.id"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all"
+                    :class="String(form.action_params.stage_id) === String(s.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'"
+                    @click="form.action_params.stage_id = s.id"
+                  >
                     <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: stageColor(s) }" />
                     <span class="text-xs text-n-slate-12 flex-1 truncate">{{ s.name }}</span>
                     <span v-if="s.stage_type === 'won'" class="text-[9px] px-1 py-0.5 rounded" style="background:#22c55e22;color:#22c55e">GANHO</span>
@@ -688,10 +831,18 @@ watch(funnelId, load);
                   <p v-if="!storeStages.filter(s => s.id !== pickerStageId).length" class="text-center text-xs text-n-slate-9 py-3">Nenhuma etapa disponível</p>
                 </div>
               </div>
-              <div v-else-if="form.action_type === 'move_to_funnel'" class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Mover para o funil</label>
-                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-xl border border-n-weak p-1">
-                  <button v-for="f in funnels.filter(f => f.id !== funnelId)" :key="f.id" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all" :class="String(form.action_params.funnel_id) === String(f.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'" @click="form.action_params.funnel_id = f.id">
+
+              <!-- move_to_funnel -->
+              <div v-else-if="form.action_type === 'move_to_funnel'" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-n-slate-10">Mover para o funil</label>
+                <div class="flex flex-col gap-1 max-h-52 overflow-y-auto rounded-lg border border-n-weak bg-n-solid-2 p-1">
+                  <button
+                    v-for="f in funnels.filter(f => f.id !== funnelId)"
+                    :key="f.id"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-all"
+                    :class="String(form.action_params.funnel_id) === String(f.id) ? 'bg-n-brand/10 border-n-brand' : 'border-transparent hover:bg-n-alpha-1'"
+                    @click="form.action_params.funnel_id = f.id"
+                  >
                     <i class="i-lucide-layout-dashboard text-n-brand text-xs flex-shrink-0" />
                     <span class="text-xs text-n-slate-12 flex-1 truncate">{{ f.name }}</span>
                     <i v-if="String(form.action_params.funnel_id) === String(f.id)" class="i-lucide-check text-n-brand text-xs" />
@@ -699,18 +850,41 @@ watch(funnelId, load);
                   <p v-if="!funnels.filter(f => f.id !== funnelId).length" class="text-center text-xs text-n-slate-9 py-3">Nenhum outro funil</p>
                 </div>
               </div>
-              <div v-if="form.action_type && form.action_type !== 'send_scheduled_message'" class="space-y-1.5 pt-2 border-t border-n-weak">
-                <label class="text-[11px] font-semibold text-n-slate-9 uppercase tracking-wide block">Executar após entrar na etapa</label>
+
+              <!-- Delay presets (shared, except send_scheduled_message) -->
+              <div v-if="form.action_type && form.action_type !== 'send_scheduled_message'" class="flex flex-col gap-1.5 pt-2 border-t border-n-weak">
+                <label class="text-xs font-semibold text-n-slate-10">Executar após entrar na etapa</label>
                 <div class="flex flex-wrap gap-1.5">
-                  <button v-for="p in DELAY_PRESETS" :key="p.value" class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all" :class="form.delay_minutes === p.value ? 'bg-n-brand text-white border-n-brand' : 'border-n-weak text-n-slate-11 hover:border-n-brand/40'" @click="form.delay_minutes = p.value">{{ p.label }}</button>
+                  <button
+                    v-for="p in DELAY_PRESETS"
+                    :key="p.value"
+                    class="h-8 px-3 rounded-lg text-xs font-medium border transition-all"
+                    :class="form.delay_minutes === p.value
+                      ? 'bg-n-brand text-white border-n-brand'
+                      : 'border-n-weak bg-n-solid-2 text-n-slate-11 hover:border-n-brand/40'"
+                    @click="form.delay_minutes = p.value"
+                  >{{ p.label }}</button>
                 </div>
               </div>
             </div>
-            <div class="px-4 py-3 border-t border-n-weak flex gap-2 flex-shrink-0">
-              <Button variant="secondary" size="sm" class="flex-1" @click="closePicker">Cancelar</Button>
-              <Button size="sm" class="flex-1" :loading="isSavingAction" @click="saveAction">
-                <i class="i-lucide-check text-xs mr-1" />{{ editingAutomationId ? 'Atualizar' : 'Adicionar' }}
-              </Button>
+
+            <!-- Footer -->
+            <div class="flex items-center gap-3 px-5 py-4 border-t border-n-weak flex-shrink-0">
+              <button
+                class="flex-1 h-9 rounded-lg border border-n-weak text-sm font-semibold text-n-slate-11 hover:bg-n-alpha-2 transition-colors"
+                @click="closePicker"
+              >
+                Cancelar
+              </button>
+              <button
+                class="flex-1 h-9 rounded-lg bg-n-brand text-white text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                :disabled="isSavingAction"
+                @click="saveAction"
+              >
+                <i v-if="isSavingAction" class="i-lucide-loader-2 animate-spin text-sm" />
+                <i v-else class="i-lucide-check text-sm" />
+                {{ editingAutomationId ? 'Atualizar' : 'Adicionar gatilho' }}
+              </button>
             </div>
           </template>
         </div>
