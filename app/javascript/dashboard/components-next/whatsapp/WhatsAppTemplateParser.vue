@@ -177,6 +177,8 @@ const campaignTokens = [
   { value: '{{contact_email}}', label: 'E-mail do contato' },
 ];
 
+const csvChipLabel = col => `{{csv:${col}}}`;
+
 const insertToken = (token) => {
   const keys = Object.keys(processedParams.value.body || {});
   if (keys.length === 0) return;
@@ -312,7 +314,7 @@ defineExpose({
               class="inline-flex items-center h-5 px-2 rounded text-[10px] font-mono font-semibold border border-n-brand/40 bg-n-brand/10 text-n-brand hover:bg-n-brand/20 transition-colors cursor-pointer"
               :title="`Coluna '${col}' da planilha`"
               @click="insertToken(`{{csv:${col}}}`)"
-            >{{ '{{csv:' + col + '}}' }}</button>
+            >{{ csvChipLabel(col) }}</button>
           </template>
         </div>
       </div>
