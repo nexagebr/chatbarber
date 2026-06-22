@@ -43,6 +43,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  showContactTokens: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(['sendMessage', 'resetTemplate', 'back']);
@@ -296,17 +300,19 @@ defineExpose({
           />
         </div>
         <div v-if="campaignMode" class="flex flex-wrap gap-1.5 mt-1 mb-1">
-          <span class="text-xs text-n-slate-10 self-center">Contato:</span>
-          <button
-            v-for="token in campaignTokens"
-            :key="token.value"
-            type="button"
-            class="inline-flex items-center h-5 px-2 rounded text-[10px] font-mono font-semibold border border-n-weak bg-n-alpha-2 text-n-slate-11 hover:border-n-brand hover:text-n-brand transition-colors cursor-pointer"
-            :title="token.label"
-            @click="insertToken(token.value)"
-          >{{ token.value }}</button>
+          <template v-if="showContactTokens">
+            <span class="text-xs text-n-slate-10 self-center">Contato:</span>
+            <button
+              v-for="token in campaignTokens"
+              :key="token.value"
+              type="button"
+              class="inline-flex items-center h-5 px-2 rounded text-[10px] font-mono font-semibold border border-n-weak bg-n-alpha-2 text-n-slate-11 hover:border-n-brand hover:text-n-brand transition-colors cursor-pointer"
+              :title="token.label"
+              @click="insertToken(token.value)"
+            >{{ token.value }}</button>
+          </template>
           <template v-if="csvColumns.length">
-            <span class="text-xs text-n-slate-10 self-center ml-1">Planilha:</span>
+            <span class="text-xs text-n-slate-10 self-center" :class="showContactTokens ? 'ml-1' : ''">Planilha:</span>
             <button
               v-for="col in csvColumns"
               :key="col"

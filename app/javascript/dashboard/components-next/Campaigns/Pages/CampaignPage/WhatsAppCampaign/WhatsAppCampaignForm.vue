@@ -305,6 +305,7 @@ watch(
       :template="selectedTemplate"
       :campaign-mode="true"
       :csv-columns="csvColumnNames"
+      :show-contact-tokens="isLabelMode"
     />
 
     <!-- ── Audiência ─────────────────────────────────────────────────────── -->
