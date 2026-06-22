@@ -149,10 +149,19 @@ const downloadExample = () => {
   URL.revokeObjectURL(url);
 };
 
+const detectDelimiter = firstLine => {
+  const sc = (firstLine.match(/;/g) || []).length;
+  const cm = (firstLine.match(/,/g) || []).length;
+  return sc > cm ? ';' : ',';
+};
+
 const parseCsv = text => {
-  const lines = text.trim().split(/\r?\n/);
+  // strip BOM if present
+  const clean = text.replace(/^﻿/, '').trim();
+  const lines = clean.split(/\r?\n/);
   if (lines.length < 2) return null;
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+  const sep = detectDelimiter(lines[0]);
+  const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
   const phoneIdx = headers.findIndex(h =>
     ['telefone', 'phone', 'fone', 'celular', 'whatsapp', 'número', 'numero'].includes(h)
   );
@@ -164,7 +173,7 @@ const parseCsv = text => {
     .slice(1)
     .filter(l => l.trim())
     .map(line => {
-      const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+      const cols = line.split(sep).map(c => c.trim().replace(/^["']|["']$/g, ''));
       const columns = {};
       headers.forEach((h, i) => { columns[h] = cols[i] || ''; });
       return {

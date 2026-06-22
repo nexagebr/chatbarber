@@ -84,7 +84,7 @@ class Whatsapp::OneoffCampaignService
   def process_csv_entry(entry)
     phone = normalize_phone(entry['phone'])
     unless phone
-      Rails.logger.info "Skipping CSV entry — invalid phone: #{entry['phone']}"
+      Rails.logger.warn "Skipping CSV entry — invalid phone: #{entry['phone'].inspect} (name: #{entry['name'].inspect})"
       return
     end
     contact = find_or_create_contact_by_phone(phone: phone, name: entry['name'])
@@ -115,7 +115,8 @@ class Whatsapp::OneoffCampaignService
     digits = raw.to_s.gsub(/\D/, '')
     return nil if digits.length < 8
 
-    digits = "55#{digits}" if digits.length <= 11
+    # Add BR country code when number has no country code (up to 12 digits covers DDD+9)
+    digits = "55#{digits}" if digits.length <= 12 && !digits.start_with?('55')
     "+#{digits}"
   end
 
