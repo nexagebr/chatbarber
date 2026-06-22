@@ -165,13 +165,23 @@ const parseCsv = text => {
     .filter(l => l.trim())
     .map(line => {
       const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+      const columns = {};
+      headers.forEach((h, i) => { columns[h] = cols[i] || ''; });
       return {
         phone: cols[phoneIdx] || '',
         name: nameIdx >= 0 ? cols[nameIdx] || '' : '',
+        columns,
       };
     })
     .filter(c => c.phone.replace(/\D/g, '').length >= 8);
 };
+
+// non-phone column names from the CSV — used as variable chips in the template parser
+const csvColumnNames = computed(() => {
+  if (!csvContacts.value.length) return [];
+  const phoneKeys = new Set(['telefone', 'phone', 'fone', 'celular', 'whatsapp', 'número', 'numero']);
+  return Object.keys(csvContacts.value[0].columns || {}).filter(k => !phoneKeys.has(k));
+});
 
 const onCsvUpload = async event => {
   const file = event.target.files[0];
@@ -217,7 +227,7 @@ const prepareCampaignDetails = () => {
 
   const audience = isLabelMode.value
     ? state.selectedAudience?.map(id => ({ id, type: 'Label' }))
-    : csvContacts.value.map(c => ({ type: 'CsvContact', phone: c.phone, name: c.name }));
+    : csvContacts.value.map(c => ({ type: 'CsvContact', phone: c.phone, name: c.name, columns: c.columns || {} }));
 
   return {
     title: state.title,
@@ -294,6 +304,7 @@ watch(
       ref="templateParserRef"
       :template="selectedTemplate"
       :campaign-mode="true"
+      :csv-columns="csvColumnNames"
     />
 
     <!-- ── Audiência ─────────────────────────────────────────────────────── -->

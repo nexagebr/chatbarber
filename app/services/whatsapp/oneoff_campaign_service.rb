@@ -45,7 +45,7 @@ class Whatsapp::OneoffCampaignService
     campaign.account.labels.where(id: audience_label_ids).pluck(:title)
   end
 
-  def process_contact(contact)
+  def process_contact(contact, csv_columns: {})
     Rails.logger.info "Processing contact: #{contact.name} (#{contact.phone_number})"
 
     if contact.phone_number.blank?
@@ -58,7 +58,7 @@ class Whatsapp::OneoffCampaignService
       return
     end
 
-    send_whatsapp_template_message(to: contact.phone_number, contact: contact)
+    send_whatsapp_template_message(to: contact.phone_number, contact: contact, csv_columns: csv_columns)
   end
 
   def process_audience(audience_labels)
@@ -90,7 +90,7 @@ class Whatsapp::OneoffCampaignService
     contact = find_or_create_contact_by_phone(phone: phone, name: entry['name'])
     return unless contact
 
-    process_contact(contact)
+    process_contact(contact, csv_columns: entry['columns'] || {})
   rescue StandardError => e
     Rails.logger.error "Failed to process CSV entry #{entry['phone']}: #{e.message}"
   end
@@ -119,8 +119,8 @@ class Whatsapp::OneoffCampaignService
     "+#{digits}"
   end
 
-  def send_whatsapp_template_message(to:, contact: nil)
-    personalized_params = contact ? personalize_template_params(campaign.template_params, contact) : campaign.template_params
+  def send_whatsapp_template_message(to:, contact: nil, csv_columns: {})
+    personalized_params = contact ? personalize_template_params(campaign.template_params, contact, csv_columns) : campaign.template_params
 
     processor = Whatsapp::TemplateProcessorService.new(
       channel: channel,
@@ -203,10 +203,11 @@ class Whatsapp::OneoffCampaignService
     '{{contact_email}}' => ->(c) { c.email.to_s }
   }.freeze
 
-  def personalize_template_params(params, contact)
+  def personalize_template_params(params, contact, csv_columns = {})
     return params if params.blank?
 
     token_map = CONTACT_TOKENS.transform_values { |fn| fn.call(contact) }
+    csv_columns.each { |col, val| token_map["{{csv:#{col}}}"] = val.to_s }
 
     deep_replace(params.deep_dup, token_map)
   end

@@ -39,6 +39,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  csvColumns: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits(['sendMessage', 'resetTemplate', 'back']);
@@ -290,7 +294,7 @@ defineExpose({
           />
         </div>
         <div v-if="campaignMode" class="flex flex-wrap gap-1.5 mt-1 mb-1">
-          <span class="text-xs text-n-slate-10 self-center">Variáveis dinâmicas:</span>
+          <span class="text-xs text-n-slate-10 self-center">Contato:</span>
           <button
             v-for="token in campaignTokens"
             :key="token.value"
@@ -299,6 +303,17 @@ defineExpose({
             :title="token.label"
             @click="insertToken(token.value)"
           >{{ token.value }}</button>
+          <template v-if="csvColumns.length">
+            <span class="text-xs text-n-slate-10 self-center ml-1">Planilha:</span>
+            <button
+              v-for="col in csvColumns"
+              :key="col"
+              type="button"
+              class="inline-flex items-center h-5 px-2 rounded text-[10px] font-mono font-semibold border border-n-brand/40 bg-n-brand/10 text-n-brand hover:bg-n-brand/20 transition-colors cursor-pointer"
+              :title="`Coluna '${col}' da planilha`"
+              @click="insertToken(`{{csv:${col}}}`)"
+            >{{csv:{{ col }}}}</button>
+          </template>
         </div>
       </div>
 
