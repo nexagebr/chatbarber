@@ -79,6 +79,19 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     render status: :internal_server_error, json: { error: e.message }
   end
 
+  def create_whatsapp_template
+    return render status: :unprocessable_entity, json: { error: 'Only available for WhatsApp Cloud channels' } unless whatsapp_channel?
+
+    result = Whatsapp::CreateTemplateService.new(channel: @inbox.channel, params: template_params_for_create).call
+    if result[:success]
+      render status: :ok, json: result[:template]
+    else
+      render status: :unprocessable_entity, json: { error: result[:error] }
+    end
+  rescue StandardError => e
+    render status: :internal_server_error, json: { error: e.message }
+  end
+
   def health
     health_data = Whatsapp::HealthService.new(@inbox.channel).fetch_health_status
     render json: health_data
@@ -211,6 +224,14 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     elsif @inbox.twilio? && @inbox.channel.whatsapp?
       Channels::Twilio::TemplatesSyncJob.perform_later(@inbox.channel)
     end
+  end
+
+  def template_params_for_create
+    params.require(:template).permit(:name, :category, :language, components: [
+                                       :type, :text, :format,
+                                       { example: { body_text: [[]] } },
+                                       { buttons: [:type, :text, :url, :phone_number] }
+                                     ])
   end
 end
 

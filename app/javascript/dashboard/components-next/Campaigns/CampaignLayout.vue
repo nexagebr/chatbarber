@@ -29,16 +29,19 @@ const handleButtonClick = () => {
           </span>
           <div
             v-on-clickaway="() => emit('close')"
-            class="relative group/campaign-button"
+            class="flex items-center gap-2"
           >
-            <Button
-              :label="buttonLabel"
-              icon="i-lucide-plus"
-              size="sm"
-              class="group-hover/campaign-button:brightness-110"
-              @click="handleButtonClick"
-            />
-            <slot name="action" />
+            <slot name="extra-actions" />
+            <div class="relative group/campaign-button">
+              <Button
+                :label="buttonLabel"
+                icon="i-lucide-plus"
+                size="sm"
+                class="group-hover/campaign-button:brightness-110"
+                @click="handleButtonClick"
+              />
+              <slot name="action" />
+            </div>
           </div>
         </div>
       </div>
