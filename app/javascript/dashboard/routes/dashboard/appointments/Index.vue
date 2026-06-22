@@ -1355,7 +1355,7 @@ const formProducts = computed(() => {
 .ag-branch-btns { display:flex; align-items:center; gap:2px; padding:3px; border-radius:9999px; border:1px solid rgb(var(--border-weak)); background:var(--ag-hover); flex-shrink:0; }
 .ag-branch-btn { display:flex; align-items:center; gap:5px; padding:4px 11px; border-radius:9999px; border:none; background:transparent; color:rgb(var(--slate-9)); font-size:11px; font-weight:600; cursor:pointer; transition:all .12s; white-space:nowrap; font-family:inherit; }
 .ag-branch-btn:hover { color:rgb(var(--slate-11)); background:rgb(var(--slate-12) / 0.06); }
-.ag-branch-btn--active { background:rgba(91,108,245,.18); color:#a5b4fc; }
+.ag-branch-btn--active { background:rgba(91,108,245,.18); color:rgb(var(--n-brand,66 65 255)); }
 
 /* ── body ────────────────────────────────────────────────────────────────── */
 .ag-body { flex:1; display:flex; overflow:hidden; }
@@ -1424,7 +1424,7 @@ const formProducts = computed(() => {
 /* full-day block */
 .ag-avail-full { position:absolute; inset:0; z-index:5; pointer-events:all; cursor:not-allowed; display:flex; align-items:center; justify-content:center; }
 .ag-avail-full--blocked {
-  background-color: #111213;
+  background-color: rgb(var(--background-color));
   background-image: repeating-linear-gradient(
     -45deg,
     transparent                 0px, transparent                 8px,
@@ -1447,7 +1447,7 @@ const formProducts = computed(() => {
 
 /* before/after work hours hatch + non-working day */
 .ag-avail-hatch { position:absolute; left:0; right:0; z-index:3; pointer-events:all; cursor:not-allowed;
-  background-color: #111213;
+  background-color: rgb(var(--background-color));
   background-image: repeating-linear-gradient(
     -45deg,
     transparent                      0px,
@@ -1461,7 +1461,7 @@ const formProducts = computed(() => {
 
 /* breaks */
 .ag-avail-break { position:absolute; left:0; right:0; z-index:4; pointer-events:none; overflow:hidden;
-  background-color: #111213;
+  background-color: rgb(var(--background-color));
   background-image: repeating-linear-gradient(
     -45deg,
     transparent                  0px, transparent                  8px,
@@ -1648,7 +1648,7 @@ textarea.mo-inp { height:auto; }
 
 /* ── payment box inside modal ─────────────────────────────────────────────── */
 .mo-payment-box { background:rgb(var(--surface-2)); border:1px solid rgb(var(--border-weak)); border-radius:10px; padding:12px 14px; }
-.mo-paid-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#22c55e; background:#dcfce7; border-radius:8px; padding:6px 12px; }
+.mo-paid-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:rgb(var(--green-11,34 197 94)); background:rgb(var(--green-3,220 252 231)); border-radius:8px; padding:6px 12px; }
 .mo-pay-methods { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px; }
 .mo-pay-btn { height:30px; border-radius:8px; border:1px solid rgb(var(--border-strong)); background:transparent; color:rgb(var(--slate-10)); font-size:11px; font-weight:600; cursor:pointer; transition:all .12s; }
 .mo-pay-btn:hover { background:rgb(var(--surface-1)); color:rgb(var(--slate-12)); }
