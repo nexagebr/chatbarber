@@ -62,16 +62,61 @@ class Whatsapp::OneoffCampaignService
   end
 
   def process_audience(audience_labels)
-    contact_ids = campaign.account.conversations
-                          .tagged_with(audience_labels, any: true)
-                          .pluck(:contact_id)
-                          .uniq
-    contacts = campaign.account.contacts.where(id: contact_ids)
-    Rails.logger.info "Processing #{contacts.count} contacts for campaign #{campaign.id}"
+    unless audience_labels.empty?
+      contact_ids = campaign.account.conversations
+                            .tagged_with(audience_labels, any: true)
+                            .pluck(:contact_id)
+                            .uniq
+      contacts = campaign.account.contacts.where(id: contact_ids)
+      Rails.logger.info "Processing #{contacts.count} label contacts for campaign #{campaign.id}"
+      contacts.each { |contact| process_contact(contact) }
+    end
 
-    contacts.each { |contact| process_contact(contact) }
+    csv_entries = campaign.audience.select { |a| a['type'] == 'CsvContact' }
+    unless csv_entries.empty?
+      Rails.logger.info "Processing #{csv_entries.count} CSV contacts for campaign #{campaign.id}"
+      csv_entries.each { |entry| process_csv_entry(entry) }
+    end
 
     Rails.logger.info "Campaign #{campaign.id} processing completed"
+  end
+
+  def process_csv_entry(entry)
+    phone = normalize_phone(entry['phone'])
+    unless phone
+      Rails.logger.info "Skipping CSV entry — invalid phone: #{entry['phone']}"
+      return
+    end
+    contact = find_or_create_contact_by_phone(phone: phone, name: entry['name'])
+    return unless contact
+
+    process_contact(contact)
+  rescue StandardError => e
+    Rails.logger.error "Failed to process CSV entry #{entry['phone']}: #{e.message}"
+  end
+
+  def find_or_create_contact_by_phone(phone:, name: nil)
+    contact = campaign.account.contacts.find_by(phone_number: phone)
+    return contact if contact
+
+    campaign.account.contacts.create!(
+      phone_number: phone,
+      name: name.presence || phone,
+      account_id: campaign.account_id
+    )
+  rescue StandardError => e
+    Rails.logger.error "Failed to find/create contact for #{phone}: #{e.message}"
+    nil
+  end
+
+  def normalize_phone(raw)
+    return nil if raw.blank?
+
+    digits = raw.to_s.gsub(/\D/, '')
+    return nil if digits.length < 8
+
+    digits = "55#{digits}" if digits.length <= 11
+    "+#{digits}"
   end
 
   def send_whatsapp_template_message(to:, contact: nil)

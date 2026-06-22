@@ -2,7 +2,7 @@
 import { reactive, computed, watch, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
-import { required, minLength } from '@vuelidate/validators';
+import { required, minLength, requiredIf } from '@vuelidate/validators';
 import { useMapGetter } from 'dashboard/composables/store';
 
 import Input from 'dashboard/components-next/input/Input.vue';
@@ -35,12 +35,22 @@ const initialState = {
 const state = reactive({ ...initialState });
 const templateParserRef = ref(null);
 
+// audience mode: 'label' or 'csv'
+const audienceMode = ref('label');
+const csvContacts = ref([]);
+const csvError = ref('');
+const csvFileRef = ref(null);
+
+const isLabelMode = computed(() => audienceMode.value === 'label');
+
 const rules = {
   title: { required, minLength: minLength(1) },
   inboxId: { required },
   templateId: { required },
   scheduledAt: { required },
-  selectedAudience: { required },
+  selectedAudience: {
+    requiredIfLabel: requiredIf(() => isLabelMode.value),
+  },
 };
 
 const v$ = useVuelidate(rules, state);
@@ -48,7 +58,6 @@ const v$ = useVuelidate(rules, state);
 const isCreating = computed(() => formState.uiFlags.value.isCreating);
 
 const currentDateTime = computed(() => {
-  // Added to disable the scheduled at field from being set to the current time
   const now = new Date();
   const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   return localTime.toISOString().slice(0, 16);
@@ -72,11 +81,9 @@ const templateOptions = computed(() => {
   if (!state.inboxId) return [];
   const templates = formState.getFilteredWhatsAppTemplates.value(state.inboxId);
   return templates.map(template => {
-    // Create a more user-friendly label from template name
     const friendlyName = template.name
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
-
     return {
       value: template.id,
       label: `${friendlyName} (${template.language || 'en'})`,
@@ -101,15 +108,19 @@ const formErrors = computed(() => ({
   inbox: getErrorMessage('inboxId', 'INBOX'),
   template: getErrorMessage('templateId', 'TEMPLATE'),
   scheduledAt: getErrorMessage('scheduledAt', 'SCHEDULED_AT'),
-  audience: getErrorMessage('selectedAudience', 'AUDIENCE'),
+  audience: isLabelMode.value ? getErrorMessage('selectedAudience', 'AUDIENCE') : '',
 }));
+
+const csvAudienceValid = computed(() =>
+  isLabelMode.value ? true : csvContacts.value.length > 0
+);
 
 const hasRequiredTemplateParams = computed(() => {
   return templateParserRef.value?.v$?.$invalid === false || true;
 });
 
 const isSubmitDisabled = computed(
-  () => v$.value.$invalid || !hasRequiredTemplateParams.value
+  () => v$.value.$invalid || !hasRequiredTemplateParams.value || !csvAudienceValid.value
 );
 
 const formatToUTCString = localDateTime =>
@@ -118,19 +129,84 @@ const formatToUTCString = localDateTime =>
 const resetState = () => {
   Object.assign(state, initialState);
   v$.value.$reset();
+  csvContacts.value = [];
+  csvError.value = '';
+  audienceMode.value = 'label';
 };
 
 const handleCancel = () => emit('cancel');
 
+// ── CSV helpers ──────────────────────────────────────────────────────────────
+
+const downloadExample = () => {
+  const content = 'telefone,nome\n+5511999998888,João Silva\n+5511988887777,Maria Santos\n+5521977776666,Ana Lima\n';
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'modelo_campanha.csv';
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+const parseCsv = text => {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return null;
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+  const phoneIdx = headers.findIndex(h =>
+    ['telefone', 'phone', 'fone', 'celular', 'whatsapp', 'número', 'numero'].includes(h)
+  );
+  const nameIdx = headers.findIndex(h =>
+    ['nome', 'name', 'cliente', 'contato'].includes(h)
+  );
+  if (phoneIdx === -1) return null;
+  return lines
+    .slice(1)
+    .filter(l => l.trim())
+    .map(line => {
+      const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+      return {
+        phone: cols[phoneIdx] || '',
+        name: nameIdx >= 0 ? cols[nameIdx] || '' : '',
+      };
+    })
+    .filter(c => c.phone.replace(/\D/g, '').length >= 8);
+};
+
+const onCsvUpload = async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  csvError.value = '';
+  csvContacts.value = [];
+  try {
+    const text = await file.text();
+    const parsed = parseCsv(text);
+    if (!parsed) {
+      csvError.value = 'Arquivo inválido. Certifique-se que há uma coluna "telefone".';
+      return;
+    }
+    if (parsed.length === 0) {
+      csvError.value = 'Nenhum número válido encontrado no arquivo.';
+      return;
+    }
+    csvContacts.value = parsed;
+  } catch {
+    csvError.value = 'Erro ao ler o arquivo. Tente novamente.';
+  }
+};
+
+const clearCsv = () => {
+  csvContacts.value = [];
+  csvError.value = '';
+  if (csvFileRef.value) csvFileRef.value.value = '';
+};
+
+// ── form submission ──────────────────────────────────────────────────────────
+
 const prepareCampaignDetails = () => {
-  // Find the selected template to get its content
   const currentTemplate = selectedTemplate.value;
   const parserData = templateParserRef.value;
-
-  // Extract template content - this should be the template message body
   const templateContent = parserData?.renderedTemplate || '';
-
-  // Prepare template_params object with the same structure as used in contacts
   const templateParams = {
     name: currentTemplate?.name || '',
     namespace: currentTemplate?.namespace || '',
@@ -139,34 +215,33 @@ const prepareCampaignDetails = () => {
     processed_params: parserData?.processedParams || {},
   };
 
+  const audience = isLabelMode.value
+    ? state.selectedAudience?.map(id => ({ id, type: 'Label' }))
+    : csvContacts.value.map(c => ({ type: 'CsvContact', phone: c.phone, name: c.name }));
+
   return {
     title: state.title,
     message: templateContent,
     template_params: templateParams,
     inbox_id: state.inboxId,
     scheduled_at: formatToUTCString(state.scheduledAt),
-    audience: state.selectedAudience?.map(id => ({
-      id,
-      type: 'Label',
-    })),
+    audience,
   };
 };
 
 const handleSubmit = async () => {
   const isFormValid = await v$.value.$validate();
   if (!isFormValid) return;
+  if (!csvAudienceValid.value) return;
 
   emit('submit', prepareCampaignDetails());
   resetState();
   handleCancel();
 };
 
-// Reset template selection when inbox changes
 watch(
   () => state.inboxId,
-  () => {
-    state.templateId = null;
-  }
+  () => { state.templateId = null; }
 );
 </script>
 
@@ -221,19 +296,116 @@ watch(
       :campaign-mode="true"
     />
 
-    <div class="flex flex-col gap-1">
-      <label for="audience" class="mb-0.5 text-sm font-medium text-n-slate-12">
+    <!-- ── Audiência ─────────────────────────────────────────────────────── -->
+    <div class="flex flex-col gap-2">
+      <label class="mb-0.5 text-sm font-medium text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.LABEL') }}
       </label>
-      <TagMultiSelectComboBox
-        v-model="state.selectedAudience"
-        :options="audienceList"
-        :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.LABEL')"
-        :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PLACEHOLDER')"
-        :has-error="!!formErrors.audience"
-        :message="formErrors.audience"
-        class="[&>div>button]:bg-n-alpha-black2"
-      />
+
+      <!-- Mode toggle -->
+      <div class="flex gap-1 p-1 rounded-lg bg-n-alpha-2 w-fit">
+        <button
+          type="button"
+          :class="[
+            'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+            isLabelMode
+              ? 'bg-white dark:bg-n-solid-3 text-n-slate-12 shadow-sm'
+              : 'text-n-slate-9 hover:text-n-slate-11'
+          ]"
+          @click="audienceMode = 'label'"
+        >
+          Por Tag
+        </button>
+        <button
+          type="button"
+          :class="[
+            'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+            !isLabelMode
+              ? 'bg-white dark:bg-n-solid-3 text-n-slate-12 shadow-sm'
+              : 'text-n-slate-9 hover:text-n-slate-11'
+          ]"
+          @click="audienceMode = 'csv'"
+        >
+          Por Planilha (CSV)
+        </button>
+      </div>
+
+      <!-- Tag audience -->
+      <div v-if="isLabelMode">
+        <TagMultiSelectComboBox
+          v-model="state.selectedAudience"
+          :options="audienceList"
+          :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.LABEL')"
+          :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PLACEHOLDER')"
+          :has-error="!!formErrors.audience"
+          :message="formErrors.audience"
+          class="[&>div>button]:bg-n-alpha-black2"
+        />
+      </div>
+
+      <!-- CSV audience -->
+      <div v-else class="flex flex-col gap-2">
+        <!-- download example + upload -->
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-n-weak bg-n-alpha-2 text-xs font-semibold text-n-slate-11 hover:text-n-slate-12 hover:border-n-strong transition-colors"
+            @click="downloadExample"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar modelo CSV
+          </button>
+          <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-n-weak bg-n-alpha-2 text-xs font-semibold text-n-slate-11 hover:text-n-slate-12 hover:border-n-strong transition-colors cursor-pointer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Enviar planilha
+            <input
+              ref="csvFileRef"
+              type="file"
+              accept=".csv,.txt"
+              class="hidden"
+              @change="onCsvUpload"
+            />
+          </label>
+        </div>
+
+        <!-- error -->
+        <p v-if="csvError" class="text-xs text-n-ruby-9">{{ csvError }}</p>
+
+        <!-- preview -->
+        <div v-if="csvContacts.length" class="rounded-lg border border-n-weak bg-n-alpha-2 overflow-hidden">
+          <div class="flex items-center justify-between px-3 py-2 border-b border-n-weak">
+            <span class="text-xs font-semibold text-n-slate-12">
+              {{ csvContacts.length }} contato{{ csvContacts.length !== 1 ? 's' : '' }} carregado{{ csvContacts.length !== 1 ? 's' : '' }}
+            </span>
+            <button
+              type="button"
+              class="text-[10px] text-n-ruby-9 hover:text-n-ruby-11 font-semibold transition-colors"
+              @click="clearCsv"
+            >
+              Remover
+            </button>
+          </div>
+          <div class="max-h-36 overflow-y-auto">
+            <div
+              v-for="(c, i) in csvContacts.slice(0, 50)"
+              :key="i"
+              class="flex items-center gap-3 px-3 py-1.5 border-b border-n-weak last:border-0"
+            >
+              <span class="text-[10px] font-mono text-n-slate-9 w-4 flex-shrink-0">{{ i + 1 }}</span>
+              <span class="text-xs font-semibold text-n-slate-12 flex-shrink-0">{{ c.phone }}</span>
+              <span v-if="c.name" class="text-xs text-n-slate-9 truncate">{{ c.name }}</span>
+            </div>
+            <div v-if="csvContacts.length > 50" class="px-3 py-1.5 text-[10px] text-n-slate-8 text-center">
+              + {{ csvContacts.length - 50 }} mais...
+            </div>
+          </div>
+        </div>
+
+        <!-- empty hint -->
+        <p v-if="!csvContacts.length && !csvError" class="text-xs text-n-slate-8">
+          Baixe o modelo, preencha com os números e faça o upload. Colunas obrigatórias: <strong>telefone</strong>. Opcional: <strong>nome</strong>.
+        </p>
+      </div>
     </div>
 
     <Input
