@@ -5,19 +5,27 @@ class Whatsapp::CreateTemplateService
   end
 
   def call
+    request_body = build_request_body
+    Rails.logger.info "[CreateTemplateService] Sending to Meta: #{request_body.to_json}"
+
     response = HTTParty.post(
       "#{business_account_path}/message_templates",
       headers: api_headers,
-      body: build_request_body.to_json
+      body: request_body.to_json
     )
+
+    Rails.logger.info "[CreateTemplateService] Meta response #{response.code}: #{response.body}"
 
     if response.success?
       template = response.parsed_response
       sync_templates_later
       { success: true, template: template }
     else
-      error = response.parsed_response&.dig('error', 'message') || "Meta API error #{response.code}"
-      { success: false, error: error }
+      parsed = response.parsed_response
+      error_msg = parsed&.dig('error', 'message')
+      error_details = parsed&.dig('error', 'error_user_msg') || parsed&.dig('error', 'error_subcode')
+      full_error = [error_msg, error_details].compact.join(' — ')
+      { success: false, error: full_error.presence || "Meta API error #{response.code}" }
     end
   rescue StandardError => e
     { success: false, error: e.message }
@@ -43,6 +51,6 @@ class Whatsapp::CreateTemplateService
   end
 
   def business_account_path
-    "https://graph.facebook.com/v14.0/#{@channel.provider_config['business_account_id']}"
+    "https://graph.facebook.com/v18.0/#{@channel.provider_config['business_account_id']}"
   end
 end
