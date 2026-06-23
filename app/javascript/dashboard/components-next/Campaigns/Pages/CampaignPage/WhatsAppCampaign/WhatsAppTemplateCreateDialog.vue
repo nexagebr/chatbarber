@@ -6,7 +6,10 @@ import InboxesAPI from 'dashboard/api/inboxes';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
-const props = defineProps({ inboxId: { type: Number, default: null } });
+const props = defineProps({
+  inboxId: { type: Number, default: null },
+  embedded: { type: Boolean, default: false },
+});
 const emit = defineEmits(['close', 'created']);
 
 const inboxes = useMapGetter('inboxes/getWhatsAppInboxes');
@@ -181,11 +184,15 @@ const varLabel = n => `{{${n}}}`;
 
 <template>
   <div
-    class="w-[28rem] z-50 absolute top-10 ltr:right-0 rtl:left-0 bg-n-alpha-3 backdrop-blur-[100px] rounded-xl border border-n-weak shadow-md max-h-[90vh] overflow-y-auto"
+    :class="
+      embedded
+        ? 'w-full'
+        : 'w-[28rem] z-50 absolute top-10 ltr:right-0 rtl:left-0 bg-n-alpha-3 backdrop-blur-[100px] rounded-xl border border-n-weak shadow-md max-h-[90vh] overflow-y-auto'
+    "
   >
     <div class="p-6 flex flex-col gap-4">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
+      <!-- Header (hidden when embedded) -->
+      <div v-if="!embedded" class="flex items-center justify-between">
         <h3 class="text-base font-medium text-n-slate-12">
           Novo Template WhatsApp
         </h3>

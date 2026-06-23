@@ -106,7 +106,7 @@ const onTemplateCreated = () => {
       <template v-else-if="tab === 'list'">
         <WhatsAppTemplatesListDialog
           :inbox-id="inboxId"
-          class="!static !w-full !max-h-none !backdrop-blur-none !bg-transparent !rounded-none !border-none !shadow-none !z-auto"
+          embedded
           @close="tab = 'send'"
         />
       </template>
@@ -115,7 +115,7 @@ const onTemplateCreated = () => {
       <template v-else-if="tab === 'create'">
         <WhatsAppTemplateCreateDialog
           :inbox-id="inboxId"
-          class="!static !w-full !max-h-none !backdrop-blur-none !bg-transparent !rounded-none !border-none !shadow-none !z-auto"
+          embedded
           @close="tab = 'send'"
           @created="onTemplateCreated"
         />

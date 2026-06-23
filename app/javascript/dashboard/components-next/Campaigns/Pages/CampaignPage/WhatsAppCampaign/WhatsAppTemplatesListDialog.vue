@@ -5,7 +5,10 @@ import { useMapGetter } from 'dashboard/composables/store';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
-const props = defineProps({ inboxId: { type: Number, default: null } });
+const props = defineProps({
+  inboxId: { type: Number, default: null },
+  embedded: { type: Boolean, default: false },
+});
 const emit = defineEmits(['close']);
 
 const inboxes = useMapGetter('inboxes/getWhatsAppInboxes');
@@ -89,10 +92,17 @@ const counts = computed(() => ({
 
 <template>
   <div
-    class="w-[32rem] z-50 absolute top-10 ltr:right-0 rtl:left-0 bg-n-alpha-3 backdrop-blur-[100px] rounded-xl border border-n-weak shadow-md max-h-[85vh] flex flex-col"
+    :class="
+      embedded
+        ? 'flex flex-col w-full'
+        : 'w-[32rem] z-50 absolute top-10 ltr:right-0 rtl:left-0 bg-n-alpha-3 backdrop-blur-[100px] rounded-xl border border-n-weak shadow-md max-h-[85vh] flex flex-col'
+    "
   >
-    <!-- Header -->
-    <div class="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
+    <!-- Header (hidden when embedded) -->
+    <div
+      v-if="!embedded"
+      class="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0"
+    >
       <h3 class="text-base font-medium text-n-slate-12">Templates WhatsApp</h3>
       <button
         type="button"
@@ -202,6 +212,7 @@ const counts = computed(() => ({
     </div>
 
     <div
+      v-if="!embedded"
       class="px-5 pb-4 pt-1 flex justify-end flex-shrink-0 border-t border-n-weak"
     >
       <Button
