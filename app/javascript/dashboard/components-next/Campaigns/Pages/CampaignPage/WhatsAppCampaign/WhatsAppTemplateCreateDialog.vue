@@ -102,12 +102,24 @@ const bodyErrors = computed(() => {
   return [];
 });
 
+const WHATSAPP_URL_PATTERN = /whatsapp\.com|wa\.me|api\.whatsapp/i;
+
+const buttonErrors = computed(() => {
+  return state.value.buttons
+    .filter(b => b.type === 'URL' && WHATSAPP_URL_PATTERN.test(b.url || ''))
+    .map(
+      b =>
+        `URL inválida "${b.url}" — a Meta não permite links para o WhatsApp em botões de template.`
+    );
+});
+
 const isValid = computed(
   () =>
     state.value.inboxId &&
     state.value.name.trim() &&
     state.value.bodyText.trim() &&
-    bodyErrors.value.length === 0
+    bodyErrors.value.length === 0 &&
+    buttonErrors.value.length === 0
 );
 
 const buildComponents = () => {
@@ -373,13 +385,23 @@ const varLabel = n => `{{${n}}}`;
             placeholder="Texto do botão"
             class="w-full rounded-md border border-n-weak bg-n-surface-1 px-2 py-1.5 text-xs text-n-slate-12 placeholder-n-slate-8 focus:outline-none focus:border-n-brand transition-colors"
           />
-          <input
-            v-if="btn.type === 'URL'"
-            v-model="btn.url"
-            type="url"
-            placeholder="https://exemplo.com"
-            class="w-full rounded-md border border-n-weak bg-n-surface-1 px-2 py-1.5 text-xs text-n-slate-12 placeholder-n-slate-8 focus:outline-none focus:border-n-brand transition-colors"
-          />
+          <template v-if="btn.type === 'URL'">
+            <input
+              v-model="btn.url"
+              type="url"
+              placeholder="https://exemplo.com"
+              class="w-full rounded-md border border-n-weak bg-n-surface-1 px-2 py-1.5 text-xs text-n-slate-12 placeholder-n-slate-8 focus:outline-none focus:border-n-brand transition-colors"
+              :class="{
+                'border-n-ruby-9': WHATSAPP_URL_PATTERN.test(btn.url || ''),
+              }"
+            />
+            <p
+              v-if="WHATSAPP_URL_PATTERN.test(btn.url || '')"
+              class="text-[11px] text-n-ruby-9"
+            >
+              Links para o WhatsApp não são permitidos pela Meta neste campo.
+            </p>
+          </template>
           <input
             v-if="btn.type === 'PHONE_NUMBER'"
             v-model="btn.phone"
