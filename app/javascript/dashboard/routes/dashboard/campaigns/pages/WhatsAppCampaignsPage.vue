@@ -10,6 +10,7 @@ import CampaignLayout from 'dashboard/components-next/Campaigns/CampaignLayout.v
 import CampaignList from 'dashboard/components-next/Campaigns/Pages/CampaignPage/CampaignList.vue';
 import WhatsAppCampaignDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/WhatsAppCampaign/WhatsAppCampaignDialog.vue';
 import WhatsAppTemplateCreateDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/WhatsAppCampaign/WhatsAppTemplateCreateDialog.vue';
+import WhatsAppTemplatesListDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/WhatsAppCampaign/WhatsAppTemplatesListDialog.vue';
 import ConfirmDeleteCampaignDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/ConfirmDeleteCampaignDialog.vue';
 import WhatsAppCampaignEmptyState from 'dashboard/components-next/Campaigns/EmptyState/WhatsAppCampaignEmptyState.vue';
 
@@ -19,6 +20,7 @@ const getters = useStoreGetters();
 const selectedCampaign = ref(null);
 const [showWhatsAppCampaignDialog, toggleWhatsAppCampaignDialog] = useToggle();
 const [showTemplateCreateDialog, toggleTemplateCreateDialog] = useToggle();
+const [showTemplatesListDialog, toggleTemplatesListDialog] = useToggle();
 
 const uiFlags = useMapGetter('campaigns/getUIFlags');
 const isFetchingCampaigns = computed(() => uiFlags.value.isFetching);
@@ -41,6 +43,7 @@ const handleDelete = campaign => {
 const closeAll = () => {
   toggleWhatsAppCampaignDialog(false);
   toggleTemplateCreateDialog(false);
+  toggleTemplatesListDialog(false);
 };
 </script>
 
@@ -55,6 +58,25 @@ const closeAll = () => {
     @close="closeAll"
   >
     <template #extra-actions>
+      <div class="relative group/templates-list-button">
+        <Button
+          label="Ver Templates"
+          icon="i-lucide-list"
+          size="sm"
+          variant="faded"
+          color="slate"
+          class="group-hover/templates-list-button:brightness-110"
+          @click="
+            toggleTemplatesListDialog();
+            toggleTemplateCreateDialog(false);
+            toggleWhatsAppCampaignDialog(false);
+          "
+        />
+        <WhatsAppTemplatesListDialog
+          v-if="showTemplatesListDialog"
+          @close="toggleTemplatesListDialog(false)"
+        />
+      </div>
       <div class="relative group/template-button">
         <Button
           label="Novo Template"
@@ -66,6 +88,7 @@ const closeAll = () => {
           @click="
             toggleTemplateCreateDialog();
             toggleWhatsAppCampaignDialog(false);
+            toggleTemplatesListDialog(false);
           "
         />
         <WhatsAppTemplateCreateDialog
