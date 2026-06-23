@@ -42,14 +42,27 @@ class Whatsapp::CreateTemplateService
     }
   end
 
+  # Meta Cloud API only accepts {{1}}, {{2}} etc. Convert named vars to numbered.
   def normalize_components(components)
     components.map do |comp|
       next comp unless comp['type'] == 'BODY'
 
-      vars = comp['text'].to_s.scan(/\{\{([^}]+)\}\}/).map(&:first).uniq
-      next comp if vars.empty? || comp['example'].present?
+      text = comp['text'].to_s
+      named_vars = text.scan(/\{\{([^}]+)\}\}/).map(&:first).uniq
+      next comp if named_vars.empty?
 
-      comp.merge('example' => { 'body_text' => [vars.each_with_index.map { |_, i| "exemplo#{i + 1}" }] })
+      numbered_text = text.dup
+      named_vars.each_with_index do |var, idx|
+        numbered_text = numbered_text.gsub("{{#{var}}}", "{{#{idx + 1}}}")
+      end
+
+      example_values = Array(comp.dig('example', 'body_text', 0))
+      numbered_examples = named_vars.each_with_index.map { |_, i| example_values[i].presence || "exemplo#{i + 1}" }
+
+      comp.merge(
+        'text' => numbered_text,
+        'example' => { 'body_text' => [numbered_examples] }
+      )
     end
   end
 
