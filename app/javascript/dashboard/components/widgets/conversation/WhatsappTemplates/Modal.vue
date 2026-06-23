@@ -45,7 +45,7 @@ const onClose = () => {
 };
 
 const onTemplateCreated = () => {
-  tab.value = 'send';
+  tab.value = 'list';
 };
 </script>
 
