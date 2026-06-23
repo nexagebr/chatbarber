@@ -5,6 +5,7 @@ import { useMapGetter } from 'dashboard/composables/store';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
+const props = defineProps({ inboxId: { type: Number, default: null } });
 const emit = defineEmits(['close']);
 
 const inboxes = useMapGetter('inboxes/getWhatsAppInboxes');
@@ -16,9 +17,10 @@ const inboxOptions = computed(() =>
 );
 
 const selectedInboxId = ref(
-  whatsappCloudInboxes.value.length === 1
-    ? whatsappCloudInboxes.value[0].id
-    : null
+  props.inboxId ||
+    (whatsappCloudInboxes.value.length === 1
+      ? whatsappCloudInboxes.value[0].id
+      : null)
 );
 
 const templates = computed(() => {

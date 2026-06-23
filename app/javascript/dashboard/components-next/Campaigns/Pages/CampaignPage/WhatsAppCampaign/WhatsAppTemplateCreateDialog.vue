@@ -6,6 +6,7 @@ import InboxesAPI from 'dashboard/api/inboxes';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
+const props = defineProps({ inboxId: { type: Number, default: null } });
 const emit = defineEmits(['close', 'created']);
 
 const inboxes = useMapGetter('inboxes/getWhatsAppInboxes');
@@ -17,7 +18,7 @@ const inboxOptions = computed(() =>
 );
 
 const state = ref({
-  inboxId: null,
+  inboxId: props.inboxId,
   name: '',
   category: 'MARKETING',
   language: 'pt_BR',

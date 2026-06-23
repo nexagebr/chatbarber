@@ -9,6 +9,8 @@ import {
 } from 'dashboard/helper/templateHelper';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { useI18n } from 'vue-i18n';
+import WhatsAppTemplateCreateDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/WhatsAppCampaign/WhatsAppTemplateCreateDialog.vue';
+import WhatsAppTemplatesListDialog from 'dashboard/components-next/Campaigns/Pages/CampaignPage/WhatsAppCampaign/WhatsAppTemplatesListDialog.vue';
 
 const props = defineProps({
   inboxId: {
@@ -23,6 +25,8 @@ const { t } = useI18n();
 const store = useStore();
 const query = ref('');
 const isRefreshing = ref(false);
+const showCreateDialog = ref(false);
+const showListDialog = ref(false);
 
 const whatsAppTemplateMessages = useFunctionGetter(
   'inboxes/getFilteredWhatsAppTemplates',
@@ -95,6 +99,43 @@ const refreshTemplates = async () => {
           :class="{ 'animate-spin': isRefreshing }"
         />
       </button>
+      <button
+        class="flex justify-center items-center w-9 h-9 rounded-lg bg-n-alpha-black2 outline outline-1 outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 hover:bg-n-alpha-2 dark:hover:bg-n-solid-2"
+        @click="
+          showListDialog = !showListDialog;
+          showCreateDialog = false;
+        "
+      >
+        <Icon icon="i-lucide-list" class="text-n-slate-12 size-4" />
+      </button>
+      <button
+        class="flex justify-center items-center w-9 h-9 rounded-lg bg-n-alpha-black2 outline outline-1 outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 hover:bg-n-alpha-2 dark:hover:bg-n-solid-2"
+        @click="
+          showCreateDialog = !showCreateDialog;
+          showListDialog = false;
+        "
+      >
+        <Icon icon="i-lucide-layout-template" class="text-n-slate-12 size-4" />
+      </button>
+    </div>
+
+    <div v-if="showListDialog" class="relative mb-3">
+      <WhatsAppTemplatesListDialog
+        :inbox-id="inboxId"
+        class="!static !w-full !max-h-[22rem] !backdrop-blur-none !bg-n-alpha-2 !rounded-lg !shadow-none"
+        @close="showListDialog = false"
+      />
+    </div>
+    <div v-if="showCreateDialog" class="relative mb-3">
+      <WhatsAppTemplateCreateDialog
+        :inbox-id="inboxId"
+        class="!static !w-full !max-h-[70vh] !backdrop-blur-none !bg-n-alpha-2 !rounded-lg !shadow-none"
+        @close="showCreateDialog = false"
+        @created="
+          showCreateDialog = false;
+          refreshTemplates();
+        "
+      />
     </div>
     <div
       class="bg-n-background outline-n-container outline outline-1 rounded-lg max-h-[18.75rem] overflow-y-auto p-2.5"
