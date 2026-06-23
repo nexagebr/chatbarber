@@ -1,6 +1,6 @@
 <script setup>
 /* eslint-disable vue/no-bare-strings-in-template */
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { useMapGetter } from 'dashboard/composables/store';
 import InboxesAPI from 'dashboard/api/inboxes';
 import Button from 'dashboard/components-next/button/Button.vue';
@@ -57,7 +57,8 @@ const namedVars = computed(() => {
   }, []);
 });
 
-watch(namedVars, vars => {
+watchEffect(() => {
+  const vars = namedVars.value;
   while (exampleValues.value.length < vars.length) exampleValues.value.push('');
   exampleValues.value = exampleValues.value.slice(0, vars.length);
 });
@@ -132,10 +133,12 @@ const buildComponents = () => {
   const components = [];
 
   const bodyComp = { type: 'BODY', text: state.value.bodyText };
-  if (exampleValues.value.length > 0) {
-    bodyComp.example = {
-      body_text: [exampleValues.value.map(v => v || 'exemplo')],
-    };
+  const vars = namedVars.value;
+  if (vars.length > 0) {
+    const examples = vars.map(
+      (_, i) => exampleValues.value[i] || `exemplo${i + 1}`
+    );
+    bodyComp.example = { body_text: [examples] };
   }
   components.push(bodyComp);
 

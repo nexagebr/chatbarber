@@ -38,8 +38,19 @@ class Whatsapp::CreateTemplateService
       name: @params[:name].to_s.downcase.gsub(/\s+/, '_'),
       category: @params[:category] || 'MARKETING',
       language: @params[:language] || 'pt_BR',
-      components: @params[:components] || []
+      components: normalize_components(@params[:components] || [])
     }
+  end
+
+  def normalize_components(components)
+    components.map do |comp|
+      next comp unless comp['type'] == 'BODY'
+
+      vars = comp['text'].to_s.scan(/\{\{([^}]+)\}\}/).map(&:first).uniq
+      next comp if vars.empty? || comp['example'].present?
+
+      comp.merge('example' => { 'body_text' => [vars.each_with_index.map { |_, i| "exemplo#{i + 1}" }] })
+    end
   end
 
   def sync_templates_later
