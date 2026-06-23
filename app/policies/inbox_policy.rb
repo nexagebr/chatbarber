@@ -65,4 +65,8 @@ class InboxPolicy < ApplicationPolicy
   def health?
     @account_user.administrator?
   end
+
+  def create_whatsapp_template?
+    @account_user.administrator?
+  end
 end
