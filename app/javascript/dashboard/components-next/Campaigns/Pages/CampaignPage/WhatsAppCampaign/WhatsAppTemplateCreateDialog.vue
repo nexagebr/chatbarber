@@ -91,34 +91,15 @@ const removeButton = idx => {
   state.value.buttons.splice(idx, 1);
 };
 
-// Validações das regras da Meta
 const bodyErrors = computed(() => {
   const text = state.value.bodyText;
   if (!text.trim()) return [];
-  const errors = [];
-
-  // Regra 1: variável não pode ser o primeiro elemento do texto
   if (/^\s*\{\{/.test(text)) {
-    errors.push(
-      'O texto não pode começar com uma variável — adicione texto antes do primeiro {{..}}.'
-    );
+    return [
+      'O texto não pode começar com uma variável — adicione texto antes do primeiro {{..}}.',
+    ];
   }
-
-  // Regra 2: variáveis numeradas devem ser sequenciais a partir de {{1}}
-  const numbered = [...text.matchAll(/\{\{(\d+)\}\}/g)].map(m =>
-    parseInt(m[1], 10)
-  );
-  if (numbered.length > 0) {
-    const unique = [...new Set(numbered)].sort((a, b) => a - b);
-    const firstGap = unique.findIndex((val, idx) => val !== idx + 1);
-    if (firstGap !== -1) {
-      errors.push(
-        `Variáveis numeradas devem ser sequenciais a partir de {{1}}. Encontrado {{${unique[firstGap]}}} sem {{${firstGap + 1}}} antes.`
-      );
-    }
-  }
-
-  return errors;
+  return [];
 });
 
 const isValid = computed(
@@ -281,7 +262,7 @@ const varLabel = n => `{{${n}}}`;
         <textarea
           v-model="state.bodyText"
           rows="4"
-          placeholder="Olá {{nome}}, seu agendamento para {{1}} está confirmado para {{data}}!"
+          placeholder="Olá {{nome}}, seu agendamento está confirmado para {{data}}. Até logo, {{profissional}}!"
           class="w-full rounded-lg border border-n-weak bg-n-alpha-2 px-3 py-2 text-sm text-n-slate-12 placeholder-n-slate-8 resize-none focus:outline-none focus:border-n-brand transition-colors"
         />
         <div v-if="bodyErrors.length" class="flex flex-col gap-1 mt-1">
@@ -294,9 +275,8 @@ const varLabel = n => `{{${n}}}`;
           </p>
         </div>
         <p v-else class="text-[11px] text-n-slate-8">
-          Use variáveis nomeadas como {{ varLabel('nome') }},
-          {{ varLabel('data') }} ou numeradas como {{ varLabel(1) }},
-          {{ varLabel(2) }}.
+          Use variáveis como {{ varLabel('nome') }}, {{ varLabel('data') }},
+          {{ varLabel('profissional') }}.
         </p>
       </div>
 
