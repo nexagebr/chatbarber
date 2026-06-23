@@ -208,8 +208,8 @@ const varLabel = n => `{{${n}}}`;
         </button>
       </div>
 
-      <!-- Inbox -->
-      <div class="flex flex-col gap-1">
+      <!-- Inbox (hidden when inbox is known from context) -->
+      <div v-if="!props.inboxId" class="flex flex-col gap-1">
         <label class="text-sm font-medium text-n-slate-12"
           >Inbox WhatsApp</label
         >

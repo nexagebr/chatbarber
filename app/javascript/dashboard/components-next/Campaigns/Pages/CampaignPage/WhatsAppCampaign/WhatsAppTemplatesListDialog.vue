@@ -113,8 +113,8 @@ const counts = computed(() => ({
       </button>
     </div>
 
-    <!-- Inbox selector -->
-    <div class="px-5 pb-3 flex-shrink-0">
+    <!-- Inbox selector (hidden when inbox is known from context) -->
+    <div v-if="!props.inboxId" class="px-5 pb-3 flex-shrink-0">
       <ComboBox
         v-model="selectedInboxId"
         :options="inboxOptions"
