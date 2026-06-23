@@ -227,11 +227,8 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def template_params_for_create
-    params.require(:template).permit(:name, :category, :language, components: [
-                                       :type, :text, :format,
-                                       { example: { body_text: [[]] } },
-                                       { buttons: [:type, :text, :url, :phone_number] }
-                                     ])
+    safe = params.require(:template).permit(:name, :category, :language)
+    safe.merge(components: params.dig(:template, :components)&.map(&:to_unsafe_h) || [])
   end
 end
 
