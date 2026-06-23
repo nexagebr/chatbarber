@@ -133,14 +133,18 @@ const counts = computed(() => ({
         <div class="flex gap-1">
           <button
             v-for="f in [
-              { key: 'all', label: `Todos (${counts.all})` },
-              { key: 'APPROVED', label: `✓ ${counts.APPROVED}` },
-              { key: 'PENDING', label: `⏳ ${counts.PENDING}` },
-              { key: 'REJECTED', label: `✗ ${counts.REJECTED}` },
+              { key: 'all', icon: null, count: counts.all },
+              {
+                key: 'APPROVED',
+                icon: 'i-lucide-check',
+                count: counts.APPROVED,
+              },
+              { key: 'PENDING', icon: 'i-lucide-clock', count: counts.PENDING },
+              { key: 'REJECTED', icon: 'i-lucide-x', count: counts.REJECTED },
             ]"
             :key="f.key"
             type="button"
-            class="text-[10px] px-2 py-1 rounded-md border transition-colors"
+            class="flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border transition-colors"
             :class="
               statusFilter === f.key
                 ? 'border-n-brand bg-n-brand/10 text-n-brand'
@@ -148,7 +152,9 @@ const counts = computed(() => ({
             "
             @click="statusFilter = f.key"
           >
-            {{ f.label }}
+            <span v-if="f.icon" class="size-3" :class="f.icon" />
+            <span v-else>Todos</span>
+            <span>{{ f.count }}</span>
           </button>
         </div>
       </div>
